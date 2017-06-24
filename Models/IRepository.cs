@@ -1,0 +1,20 @@
+﻿namespace Church.BibleStudyFellowship.Models
+{
+    using System.Collections.Generic;
+    using System.Threading.Tasks;
+
+    public interface IRepository
+    {
+        Task AddStudyAsync(Study study);
+
+        IEnumerable<Study> GetStudies();
+
+        Task AddLessonAsync(Lesson lesson);
+
+        Lesson GetLesson(string culture, string id);
+
+        Task AddFeedbackAsync(Feedback feedback);
+
+        IEnumerable<Feedback> GetFeedback();
+    }
+}
