@@ -12,7 +12,6 @@
     using Church.BibleStudyFellowship.Models.Storage;
     using Swashbuckle.Swagger.Annotations;
 
-    [SelfAuthorizeAttribute]
     public class LessonsController : ApiController
     {
         private readonly IRepository repository;

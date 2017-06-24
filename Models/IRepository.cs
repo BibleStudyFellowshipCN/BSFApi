@@ -7,7 +7,7 @@
     {
         Task AddStudyAsync(Study study);
 
-        IEnumerable<Study> GetStudies();
+        IEnumerable<Study> GetStudies(string culture);
 
         Task AddLessonAsync(Lesson lesson);
 

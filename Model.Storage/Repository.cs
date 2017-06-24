@@ -53,9 +53,10 @@
             return this.studyTable.ExecuteAsync(insertOperation);
         }
 
-        public IEnumerable<Study> GetStudies()
+        public IEnumerable<Study> GetStudies(string culture)
         {
-            var query = new TableQuery<DynamicTableEntity>();
+            var filter = TableQuery.GenerateFilterCondition("PartitionKey", QueryComparisons.Equal, culture);
+            var query = new TableQuery().Where(filter);
             return this.studyTable.ExecuteQuery(query).Select(item => item.ToStudy());
         }
 
