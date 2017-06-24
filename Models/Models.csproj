@@ -41,6 +41,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BibleBook.cs" />
+    <Compile Include="BibleVerse.cs" />
     <Compile Include="Feedback.cs" />
     <Compile Include="IRepository.cs" />
     <Compile Include="Lesson.cs" />

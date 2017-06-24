@@ -67,6 +67,19 @@
             return entry;
         }
 
+        public static DynamicTableEntity ToStorage(this BibleVerse verse)
+        {
+            var entry = new DynamicTableEntity
+            {
+                PartitionKey = verse.Version,
+                RowKey = verse.BookOrder.ToString("D2") + verse.ChapterOrder.ToString("D3") + verse.Order.ToString("D3"),
+            };
+            entry.Properties["Culture"] = EntityProperty.CreateEntityPropertyFromObject(verse.Culture);
+            entry.Properties["Text"] = EntityProperty.CreateEntityPropertyFromObject(verse.Text);
+
+            return entry;
+        }
+
         public static Study ToStudy(this DynamicTableEntity entry)
         {
             return new Study
@@ -116,6 +129,19 @@
                 Order = int.Parse(entry.RowKey),
                 Name = entry["Name"].StringValue,
                 Shorthand = entry["Shorthand"].StringValue,
+            };
+        }
+
+        public static BibleVerse ToBibleVerse(this DynamicTableEntity entry)
+        {
+            return new BibleVerse
+            {
+                Version = entry.PartitionKey,
+                BookOrder = int.Parse(entry.RowKey.Substring(0,2)),
+                ChapterOrder = int.Parse(entry.RowKey.Substring(2, 3)),
+                Order = int.Parse(entry.RowKey.Substring(5, 3)),
+                Culture = entry["Culture"].StringValue,
+                Text = entry["Text"].StringValue,
             };
         }
     }
