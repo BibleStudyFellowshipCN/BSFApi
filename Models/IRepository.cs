@@ -16,5 +16,9 @@
         Task AddFeedbackAsync(Feedback feedback);
 
         IEnumerable<Feedback> GetFeedback();
+
+        Task AddBibleBooksAsync(IEnumerable<BibleBook> books);
+
+        IEnumerable<BibleBook> GetBibleBooks(string culture);
     }
 }

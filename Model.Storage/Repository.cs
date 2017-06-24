@@ -16,11 +16,22 @@
 
         private readonly CloudTable feedbackTable;
 
-        internal Repository(CloudTable studyTable, CloudTable lessonTable, CloudTable feedbackTable)
+        private readonly CloudTable bibleBookTable;
+
+        private readonly CloudTable bibleVerseTable;
+
+        internal Repository(
+            CloudTable studyTable,
+            CloudTable lessonTable,
+            CloudTable feedbackTable,
+            CloudTable bibleBookTable,
+            CloudTable bibleVerseTable)
         {
             this.studyTable = studyTable;
             this.lessonTable = lessonTable;
             this.feedbackTable = feedbackTable;
+            this.bibleBookTable = bibleBookTable;
+            this.bibleVerseTable = bibleVerseTable;
         }
 
         public static Repository Create(string connectionString)
@@ -30,8 +41,10 @@
             var studyTable = Repository.CreateTableIfNotExist(tableClient, Constants.StudyTable);
             var lessonTable = Repository.CreateTableIfNotExist(tableClient, Constants.LessonTable);
             var feedbackTable = Repository.CreateTableIfNotExist(tableClient, Constants.FeedbackTable);
+            var bibleBookTable = Repository.CreateTableIfNotExist(tableClient, Constants.BibleBookTable);
+            var bibleVerseTable = Repository.CreateTableIfNotExist(tableClient, Constants.BibleVerseTable);
 
-            return new Repository(studyTable, lessonTable, feedbackTable);
+            return new Repository(studyTable, lessonTable, feedbackTable, bibleBookTable, bibleVerseTable);
         }
 
         public Task AddStudyAsync(Study study)
@@ -70,6 +83,24 @@
         {
             var query = new TableQuery<DynamicTableEntity>();
             return this.feedbackTable.ExecuteQuery(query).Select(item => item.ToFeedback());
+        }
+
+        public Task AddBibleBooksAsync(IEnumerable<BibleBook> books)
+        {
+            var batchOperations = new TableBatchOperation();
+            foreach(var book in books)
+            {
+                batchOperations.Insert(book.ToStorage());
+            }
+
+            return this.bibleBookTable.ExecuteBatchAsync(batchOperations);
+        }
+
+        public IEnumerable<BibleBook> GetBibleBooks(string culture)
+        {
+            var filter = TableQuery.GenerateFilterCondition("PartitionKey", QueryComparisons.Equal, culture);
+            var query = new TableQuery().Where(filter);
+            return this.bibleBookTable.ExecuteQuery(query).Select(item => item.ToBibleBook());
         }
 
         private static CloudTable CreateTableIfNotExist(CloudTableClient client, string name)

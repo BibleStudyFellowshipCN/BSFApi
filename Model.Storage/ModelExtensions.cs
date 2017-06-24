@@ -54,6 +54,19 @@
             return entry;
         }
 
+        public static DynamicTableEntity ToStorage(this BibleBook book)
+        {
+            var entry = new DynamicTableEntity
+            {
+                PartitionKey = book.Culture,
+                RowKey = book.Order.ToString(),
+            };
+            entry.Properties["Name"] = EntityProperty.CreateEntityPropertyFromObject(book.Name);
+            entry.Properties["Shorthand"] = EntityProperty.CreateEntityPropertyFromObject(book.Shorthand);
+
+            return entry;
+        }
+
         public static Study ToStudy(this DynamicTableEntity entry)
         {
             return new Study
@@ -92,6 +105,17 @@
             {
                 TimeStamp = entry.Timestamp.UtcDateTime,
                 Comment = entry["Comment"].StringValue,
+            };
+        }
+
+        public static BibleBook ToBibleBook(this DynamicTableEntity entry)
+        {
+            return new BibleBook
+            {
+                Culture = entry.PartitionKey,
+                Order = int.Parse(entry.RowKey),
+                Name = entry["Name"].StringValue,
+                Shorthand = entry["Shorthand"].StringValue,
             };
         }
     }
