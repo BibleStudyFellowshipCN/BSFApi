@@ -52,6 +52,7 @@
     <Compile Include="SectionWrapper.cs" />
     <Compile Include="Study.cs" />
     <Compile Include="ExceptionUtilities.cs" />
+    <Compile Include="VerseItem.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
