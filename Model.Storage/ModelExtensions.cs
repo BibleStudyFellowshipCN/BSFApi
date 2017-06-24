@@ -15,9 +15,8 @@
             var entry = new DynamicTableEntity
             {
                 PartitionKey = study.Culture,
-                RowKey = study.Year.ToString(),
+                RowKey = study.Title,
             };
-            entry.Properties["Name"] = EntityProperty.CreateEntityPropertyFromObject(study.Name);
             entry.Properties["Lessons"] = EntityProperty.CreateEntityPropertyFromObject(JsonConvert.SerializeObject(study.Lessons));
 
             return entry;
@@ -60,8 +59,7 @@
             return new Study
             {
                 Culture = entry.PartitionKey,
-                Year = int.Parse(entry.RowKey),
-                Name = entry["Name"].StringValue,
+                Title = entry.RowKey,
                 Lessons = JsonConvert.DeserializeObject<IList<LessonItem>>(entry["Lessons"].StringValue),
             };
         }

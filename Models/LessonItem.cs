@@ -4,8 +4,8 @@
 
     public class LessonItem
     {
-        public string Name { get; set; }
+        public string Id { get; set; }
 
-        public string ProposedDate { get; set; }
+        public string Name { get; set; }
     }
 }

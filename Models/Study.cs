@@ -9,11 +9,9 @@
             this.Lessons = new List<LessonItem>();
         }
 
-        public int Year { get; set; }
-
         public string Culture { get; set; }
 
-        public string Name { get; set; }
+        public string Title { get; set; }
 
         public IList<LessonItem> Lessons { get; set; }
     }
