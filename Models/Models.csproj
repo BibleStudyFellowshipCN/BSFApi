@@ -8,7 +8,7 @@
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Church.BibleStudyFellowship.Models</RootNamespace>
-    <AssemblyName>Church.BibleStudyFellowship.Models</AssemblyName>
+    <AssemblyName>BibleStudyFellowship.Models</AssemblyName>
     <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
@@ -44,15 +44,18 @@
     <Compile Include="BibleVerse.cs" />
     <Compile Include="Feedback.cs" />
     <Compile Include="IRepository.cs" />
+    <Compile Include="ITextParser.cs" />
     <Compile Include="Lesson.cs" />
     <Compile Include="LessonItem.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Day.cs" />
     <Compile Include="Question.cs" />
+    <Compile Include="SectionAttribute.cs" />
     <Compile Include="SectionItem.cs" />
     <Compile Include="SectionWrapper.cs" />
     <Compile Include="Study.cs" />
     <Compile Include="ExceptionUtilities.cs" />
+    <Compile Include="TextParseEnUs.cs" />
     <Compile Include="VerseItem.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
