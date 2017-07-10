@@ -23,10 +23,9 @@
 
         // GET api/values
         [SwaggerOperation("GetAll")]
-        public IEnumerable<Study> Get(string culture = null)
+        public IEnumerable<Study> Get(string culture)
         {
-            // TODO Set zh-CN as default
-            return this.repository.GetStudies(culture ?? "en-US");
+            return this.repository.GetStudies(culture);
         }
 
         // GET api/values/5

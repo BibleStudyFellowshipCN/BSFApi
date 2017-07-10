@@ -17,21 +17,32 @@
 
         private static Regex QuotationPattern = new Regex(@"^“.+”$", RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
-        private readonly int year;
+        private static IDictionary<string, string> OrdinalMapping = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+        {
+            {"First", "1ST" },
+            {"Second", "2ND" },
+            {"Third", "3RD" },
+            {"Fourth", "4TH" },
+            {"Fifth", "5TH" },
+            {"FIXTH", "5TH" },
+            {"Sixth", "6TH" },
+        };
 
         private readonly IDictionary<Regex, MethodInfo> methodMappings;
-
-        private readonly CultureInfo culture;
 
         private readonly Regex versePattern;
 
         internal TextParseEnUs(int year, CultureInfo culture, Regex versePattern, IDictionary<Regex, MethodInfo> methodMappings)
         {
-            this.year = year;
-            this.culture = culture;
+            this.Year = year;
+            this.Culture = culture;
             this.versePattern = versePattern;
             this.methodMappings = methodMappings;
         }
+
+        public int Year { get; }
+
+        public CultureInfo Culture { get; }
 
         public static TextParseEnUs Create(int year, IRepository repository)
         {
@@ -47,7 +58,7 @@
         public Lesson Parse(string input)
         {
             input = input.Replace('\t', ' ');
-            var lesson = new Lesson { Culture = this.culture.Name };
+            var lesson = new Lesson { Culture = this.Culture.Name };
 
             var lines = input.Split(new[] { Environment.NewLine }, StringSplitOptions.None).ToList();
             var sectionLines = new List<string>();
@@ -86,7 +97,7 @@
             const string Prefix = "BSF® Lesson ";
 
             ExceptionUtilities.ThowInvalidOperationExceptionIfFalse(lines.Count > 3, "At least 4 lines.");
-            lesson.Id = string.Join("_", this.year, lines[1].Substring(Prefix.Length).Trim());
+            lesson.Id = string.Join("_", this.Year, lines[1].Substring(Prefix.Length).Trim());
             lesson.Name = lines[3];
         }
 
@@ -114,7 +125,7 @@
             var title = lines[0].Substring(match.Value.Length).Trim();
             var day = new Day
             {
-                Tab = match.Groups[1].Value,
+                Tab = TextParseEnUs.OrdinalMapping[match.Groups[1].Value],
                 Title = title,
                 ReadVerse = this.ExtractVerse(title),
             };
@@ -158,12 +169,12 @@
                 }
 
                 var count = 1;
-                var id = string.Join(Separator, this.year, lesson.DayQuestions.Count(), questionOrder, count);
+                var id = string.Join(Separator, this.Year, lesson.DayQuestions.Count(), questionOrder, count);
                 var firstQuestion = lines.Take(top).Union(questions.Take(1));
                 this.AddQuestion(lesson, firstQuestion, id, questionOrder);
                 foreach (var line in questions.Skip(1))
                 {
-                    id = string.Join(Separator, this.year, lesson.DayQuestions.Count(), questionOrder, ++count);
+                    id = string.Join(Separator, this.Year, lesson.DayQuestions.Count(), questionOrder, ++count);
                     this.AddQuestion(lesson, new[] { line }, id, questionOrder);
                 }
             }
@@ -171,12 +182,12 @@
             {
                 var top = lines.Count - numberOfQuestions;
                 var count = 1;
-                var id = string.Join(Separator, this.year, lesson.DayQuestions.Count(), questionOrder, count);
+                var id = string.Join(Separator, this.Year, lesson.DayQuestions.Count(), questionOrder, count);
                 this.AddQuestion(lesson, lines.Take(top), id, questionOrder);
                 lesson.DayQuestions.Last().Questions.Last().QuestionText += "\n" + lines[top + 1];
                 foreach(var line in lines.Skip(top + 1))
                 {
-                    id = string.Join(Separator, this.year, lesson.DayQuestions.Count(), questionOrder, ++count);
+                    id = string.Join(Separator, this.Year, lesson.DayQuestions.Count(), questionOrder, ++count);
                     this.AddQuestion(lesson, new[] { line }, id, questionOrder);
                 }
             }
@@ -184,18 +195,18 @@
             {
                 var top = lines.Count - numberOfQuestions;
                 var count = 1;
-                var id = string.Join(Separator, this.year, lesson.DayQuestions.Count(), questionOrder, count);
+                var id = string.Join(Separator, this.Year, lesson.DayQuestions.Count(), questionOrder, count);
                 this.AddQuestion(lesson, lines.Take(top), id, questionOrder);
                 lesson.DayQuestions.Last().Questions.Last().QuestionText += "\n" + lines[top + 1];
                 foreach (var line in lines.Skip(top + 1))
                 {
-                    id = string.Join(Separator, this.year, lesson.DayQuestions.Count(), questionOrder, ++count);
+                    id = string.Join(Separator, this.Year, lesson.DayQuestions.Count(), questionOrder, ++count);
                     this.AddQuestion(lesson, new[] { line }, id, questionOrder);
                 }
             }
             else
             {
-                var id = string.Join(Separator, this.year, lesson.DayQuestions.Count(), questionOrder);
+                var id = string.Join(Separator, this.Year, lesson.DayQuestions.Count(), questionOrder);
                 this.AddQuestion(lesson, lines, id, questionOrder);
             }
         }

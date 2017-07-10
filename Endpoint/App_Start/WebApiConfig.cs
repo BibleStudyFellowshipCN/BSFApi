@@ -27,7 +27,7 @@
 
             config.Routes.MapHttpRoute(
                 name: "MaterialApi",
-                routeTemplate: "material/{controller}/{id}",
+                routeTemplate: "material/{culture}/{controller}/{id}",
                 defaults: new
                 {
                     id = RouteParameter.Optional,
