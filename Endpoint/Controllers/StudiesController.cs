@@ -26,7 +26,7 @@
         public IEnumerable<Study> Get(string culture = null)
         {
             // TODO Set zh-CN as default
-            return this.repository.GetStudies(culture ?? "zh-CN");
+            return this.repository.GetStudies(culture ?? "en-US");
         }
 
         // GET api/values/5

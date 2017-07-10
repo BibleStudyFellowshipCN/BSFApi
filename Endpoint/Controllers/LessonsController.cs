@@ -34,7 +34,7 @@
         [SwaggerResponse(HttpStatusCode.NotFound)]
         public Lesson Get(string id, string culture = null)
         {
-            return this.repository.GetLesson(culture ?? "zh-CN", id);
+            return this.repository.GetLesson(culture ?? "en-US", id);
         }
 
         // POST api/values

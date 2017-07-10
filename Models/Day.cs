@@ -6,7 +6,7 @@
     {
         public Day()
         {
-            this.readVerse = new List<VerseItem>();
+            this.ReadVerse = new List<VerseItem>();
             this.Questions = new List<Question>();
         }
 
@@ -14,7 +14,7 @@
 
         public string Title { get; set; }
 
-        public IList<VerseItem> readVerse { get; set; }
+        public IList<VerseItem> ReadVerse { get; set; }
 
         public IList<Question> Questions { get; set; }
     }

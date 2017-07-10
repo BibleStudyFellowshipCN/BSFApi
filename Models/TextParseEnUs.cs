@@ -9,7 +9,7 @@
 
     public class TextParseEnUs : ITextParser
     {
-        private static Regex DayPattern = new Regex("^([A-Z]+) DAY: ", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+        private static Regex DayPattern = new Regex("^([A-Z]+) DAY:", RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
         private static Regex QuestionPattern = new Regex(@"^ *(\d+)\. ", RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
@@ -46,6 +46,7 @@
 
         public Lesson Parse(string input)
         {
+            input = input.Replace('\t', ' ');
             var lesson = new Lesson { Culture = this.culture.Name };
 
             var lines = input.Split(new[] { Environment.NewLine }, StringSplitOptions.None).ToList();
@@ -85,7 +86,7 @@
             const string Prefix = "BSF® Lesson ";
 
             ExceptionUtilities.ThowInvalidOperationExceptionIfFalse(lines.Count > 3, "At least 4 lines.");
-            lesson.Id = string.Join("_", this.year, lines[1].Substring(Prefix.Length));
+            lesson.Id = string.Join("_", this.year, lines[1].Substring(Prefix.Length).Trim());
             lesson.Name = lines[3];
         }
 
@@ -106,14 +107,16 @@
             lesson.MemoryVerse = string.Join(string.Empty, lines.Skip(1));
         }
 
-        [Section("^[A-Z]+ DAY: ")]
+        [Section("^[A-Z]+ DAY:")]
         protected void ParseDay(Lesson lesson, IList<string> lines)
         {
             var match = TextParseEnUs.DayPattern.Match(lines[0]);
+            var title = lines[0].Substring(match.Value.Length).Trim();
             var day = new Day
             {
-                Title = lines[0].Substring(match.Value.Length),
                 Tab = match.Groups[1].Value,
+                Title = title,
+                ReadVerse = this.ExtractVerse(title),
             };
             if (lines.Count > 1)
             {
@@ -129,6 +132,7 @@
             const string Separator = "_";
 
             var match = TextParseEnUs.QuestionPattern.Match(lines[0]);
+            var questionOrder = match.Groups[1].Value;
             lines[0] = lines[0].Substring(match.Value.Length);
             var numberOfQuestions = 1;
             if ((numberOfQuestions = TextParseEnUs.GetNumberOfBulletins(lines)) > 1)
@@ -154,50 +158,55 @@
                 }
 
                 var count = 1;
-                var id = string.Join(Separator, this.year, lesson.DayQuestions.Count(), match.Groups[1].Value, count);
+                var id = string.Join(Separator, this.year, lesson.DayQuestions.Count(), questionOrder, count);
                 var firstQuestion = lines.Take(top).Union(questions.Take(1));
-                this.AddQuestion(lesson, firstQuestion, id);
+                this.AddQuestion(lesson, firstQuestion, id, questionOrder);
                 foreach (var line in questions.Skip(1))
                 {
-                    id = string.Join(Separator, this.year, lesson.DayQuestions.Count(), match.Groups[1].Value, ++count);
-                    this.AddQuestion(lesson, new[] { line }, id);
+                    id = string.Join(Separator, this.year, lesson.DayQuestions.Count(), questionOrder, ++count);
+                    this.AddQuestion(lesson, new[] { line }, id, questionOrder);
                 }
             }
             else if ((numberOfQuestions = this.GetNumberOfVerses(lines)) > 1)
             {
                 var top = lines.Count - numberOfQuestions;
                 var count = 1;
-                var id = string.Join(Separator, this.year, lesson.DayQuestions.Count(), match.Groups[1].Value, count);
-                this.AddQuestion(lesson, lines.Take(top), id);
+                var id = string.Join(Separator, this.year, lesson.DayQuestions.Count(), questionOrder, count);
+                this.AddQuestion(lesson, lines.Take(top), id, questionOrder);
                 lesson.DayQuestions.Last().Questions.Last().QuestionText += "\n" + lines[top + 1];
                 foreach(var line in lines.Skip(top + 1))
                 {
-                    id = string.Join(Separator, this.year, lesson.DayQuestions.Count(), match.Groups[1].Value, ++count);
-                    this.AddQuestion(lesson, new[] { line }, id);
+                    id = string.Join(Separator, this.year, lesson.DayQuestions.Count(), questionOrder, ++count);
+                    this.AddQuestion(lesson, new[] { line }, id, questionOrder);
                 }
             }
             else if ((numberOfQuestions = TextParseEnUs.GetNumberOfQuotations(lines)) > 1)
             {
                 var top = lines.Count - numberOfQuestions;
                 var count = 1;
-                var id = string.Join(Separator, this.year, lesson.DayQuestions.Count(), match.Groups[1].Value, count);
-                this.AddQuestion(lesson, lines.Take(top), id);
+                var id = string.Join(Separator, this.year, lesson.DayQuestions.Count(), questionOrder, count);
+                this.AddQuestion(lesson, lines.Take(top), id, questionOrder);
                 lesson.DayQuestions.Last().Questions.Last().QuestionText += "\n" + lines[top + 1];
                 foreach (var line in lines.Skip(top + 1))
                 {
-                    id = string.Join(Separator, this.year, lesson.DayQuestions.Count(), match.Groups[1].Value, ++count);
-                    this.AddQuestion(lesson, new[] { line }, id);
+                    id = string.Join(Separator, this.year, lesson.DayQuestions.Count(), questionOrder, ++count);
+                    this.AddQuestion(lesson, new[] { line }, id, questionOrder);
                 }
             }
             else
             {
-                var id = string.Join(Separator, this.year, lesson.DayQuestions.Count(), match.Groups[1].Value);
-                this.AddQuestion(lesson, lines, id);
+                var id = string.Join(Separator, this.year, lesson.DayQuestions.Count(), questionOrder);
+                this.AddQuestion(lesson, lines, id, questionOrder);
             }
         }
 
+        [Section(@"^\(No homiletics for group and administrative leaders\)$")]
+        protected void ParseLeader(Lesson lesson, IList<string> lines)
+        {
+        }
+
         [Section(@"^Copyright © Bible Study Fellowship")]
-        protected void ParsEnding(Lesson lesson, IList<string> lines)
+        protected void ParseEnding(Lesson lesson, IList<string> lines)
         {
         }
 
@@ -259,9 +268,9 @@
             return count;
         }
 
-        private void AddQuestion(Lesson lesson, IEnumerable<string> lines, string id)
+        private void AddQuestion(Lesson lesson, IEnumerable<string> lines, string id, string questionOrder)
         {
-            var text = string.Join(string.Empty, lines);
+            var text = questionOrder + ". " + string.Join(string.Empty, lines);
             var question = new Question
             {
                 Id = id,
