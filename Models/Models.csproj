@@ -55,6 +55,8 @@
     <Compile Include="SectionWrapper.cs" />
     <Compile Include="Study.cs" />
     <Compile Include="ExceptionUtilities.cs" />
+    <Compile Include="TextParseZhTw.cs" />
+    <Compile Include="TextParseZhCn.cs" />
     <Compile Include="TextParseEsMx.cs" />
     <Compile Include="TextParseEnUs.cs" />
     <Compile Include="VerseItem.cs" />
