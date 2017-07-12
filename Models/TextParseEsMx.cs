@@ -7,9 +7,9 @@
     using System.Reflection;
     using System.Text.RegularExpressions;
 
-    public class TextParseEnUs : ITextParser
+    public class TextParseEsMx : ITextParser
     {
-        private static Regex DayPattern = new Regex("^([A-Z]+) DAY:", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+        private static Regex DayPattern = new Regex("^([A-Z]+) DÍA:", RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
         private static Regex QuestionPattern = new Regex(@"^ *(\d+)\. ", RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
@@ -19,19 +19,19 @@
 
         private static IDictionary<string, string> OrdinalMapping = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
         {
-            {"First", "1ST" },
-            {"Second", "2ND" },
-            {"Third", "3RD" },
-            {"Fourth", "4TH" },
-            {"Fifth", "5TH" },
-            {"Sixth", "6TH" },
+            {"PRIMER", "1ER" },
+            {"SEGUNDO", "2DO" },
+            {"TERCER", "3TE" },
+            {"CUARTO", "4TO" },
+            {"QUINTO", "5TO" },
+            {"SEXTO", "6TO" },
         };
 
         private readonly IDictionary<Regex, MethodInfo> methodMappings;
 
         private readonly Regex versePattern;
 
-        internal TextParseEnUs(int year, CultureInfo culture, Regex versePattern, IDictionary<Regex, MethodInfo> methodMappings)
+        internal TextParseEsMx(int year, CultureInfo culture, Regex versePattern, IDictionary<Regex, MethodInfo> methodMappings)
         {
             this.Year = year;
             this.Culture = culture;
@@ -43,15 +43,15 @@
 
         public CultureInfo Culture { get; }
 
-        public static TextParseEnUs Create(int year, IRepository repository)
+        public static TextParseEsMx Create(int year, IRepository repository)
         {
-            var methods = typeof(TextParseEnUs).GetMethods(BindingFlags.Instance | BindingFlags.NonPublic)
+            var methods = typeof(TextParseEsMx).GetMethods(BindingFlags.Instance | BindingFlags.NonPublic)
                 .Where(method => method.GetCustomAttributes(false).OfType<SectionAttribute>().Any());
-            var methodMappings = methods.ToDictionary(TextParseEnUs.GetRegex);
-            var culture = CultureInfo.CreateSpecificCulture("en-US");
-            var versePattern = TextParseEnUs.GetBibleVersePattern(repository, culture.Name);
+            var methodMappings = methods.ToDictionary(TextParseEsMx.GetRegex);
+            var culture = CultureInfo.CreateSpecificCulture("es-MX");
+            var versePattern = TextParseEsMx.GetBibleVersePattern(repository, culture.Name);
 
-            return new TextParseEnUs(year, culture, versePattern, methodMappings);
+            return new TextParseEsMx(year, culture, versePattern, methodMappings);
         }
 
         public Lesson Parse(string input)
@@ -90,10 +90,10 @@
             return lesson;
         }
 
-        [Section(@"Lesson \d+ \| www\.bsfinternational\.org")]
+        [Section(@"^Lección \d+: ")]
         protected void ParseFotter1(Lesson lesson, IList<string> lines)
         {
-            const string Prefix = "BSF® Lesson ";
+            const string Prefix = "BSF® Lección ";
 
             ExceptionUtilities.ThowInvalidOperationExceptionIfFalse(lines.Count > 3, "At least 4 lines.");
             lesson.Id = string.Join("_", this.Year, lines[1].Substring(Prefix.Length).Trim());
@@ -110,21 +110,21 @@
         {
         }
 
-        [Section("^Scripture Memory Verse")]
+        [Section("^Versículo de las Escrituras para memorizar")]
         protected void ParseMemoryVerse(Lesson lesson, IList<string> lines)
         {
             ExceptionUtilities.ThowInvalidOperationExceptionIfFalse(lines.Count() > 1, "At least two lines.");
             lesson.MemoryVerse = string.Join(string.Empty, lines.Skip(1));
         }
 
-        [Section("^[A-Z]+ DAY:")]
+        [Section("^[A-Z]+ DÍA:")]
         protected void ParseDay(Lesson lesson, IList<string> lines)
         {
-            var match = TextParseEnUs.DayPattern.Match(lines[0]);
+            var match = TextParseEsMx.DayPattern.Match(lines[0]);
             var title = lines[0].Substring(match.Value.Length).Trim();
             var day = new Day
             {
-                Tab = TextParseEnUs.OrdinalMapping[match.Groups[1].Value],
+                Tab = TextParseEsMx.OrdinalMapping[match.Groups[1].Value],
                 Title = title,
                 ReadVerse = this.ExtractVerse(title),
             };
@@ -141,14 +141,14 @@
         {
             const string Separator = "_";
 
-            var match = TextParseEnUs.QuestionPattern.Match(lines[0]);
+            var match = TextParseEsMx.QuestionPattern.Match(lines[0]);
             var questionOrder = match.Groups[1].Value;
             lines[0] = lines[0].Substring(match.Value.Length);
             var numberOfQuestions = 1;
-            if ((numberOfQuestions = TextParseEnUs.GetNumberOfBulletins(lines)) > 1)
+            if ((numberOfQuestions = TextParseEsMx.GetNumberOfBulletins(lines)) > 1)
             {
                 var top = 0;
-                while(!TextParseEnUs.BulletinPattern.IsMatch(lines[top]))
+                while(!TextParseEsMx.BulletinPattern.IsMatch(lines[top]))
                 {
                     top++;
                     break;
@@ -157,7 +157,7 @@
                 var questions = new List<string>();
                 foreach (var line in lines.Skip(top))
                 {
-                    if (TextParseEnUs.BulletinPattern.IsMatch(line))
+                    if (TextParseEsMx.BulletinPattern.IsMatch(line))
                     {
                         questions.Add(line.Trim());
                     }
@@ -190,7 +190,7 @@
                     this.AddQuestion(lesson, new[] { line }, id, questionOrder);
                 }
             }
-            else if ((numberOfQuestions = TextParseEnUs.GetNumberOfQuotations(lines)) > 1)
+            else if ((numberOfQuestions = TextParseEsMx.GetNumberOfQuotations(lines)) > 1)
             {
                 var top = lines.Count - numberOfQuestions;
                 var count = 1;
@@ -210,7 +210,7 @@
             }
         }
 
-        [Section(@"^\(No homiletics for group and administrative leaders\)$")]
+        [Section(@"^\(No hay homilética para líderes de grupo y administrativos\)$")]
         protected void ParseLeader(Lesson lesson, IList<string> lines)
         {
         }
@@ -240,7 +240,7 @@
             var count = 0;
             foreach (var line in lines)
             {
-                if (TextParseEnUs.BulletinPattern.IsMatch(line))
+                if (TextParseEsMx.BulletinPattern.IsMatch(line))
                 {
                     count++;
                 }
@@ -269,7 +269,7 @@
             var count = 0;
             foreach (var line in lines)
             {
-                if (TextParseEnUs.QuotationPattern.IsMatch(line))
+                if (TextParseEsMx.QuotationPattern.IsMatch(line))
                 {
                     count++;
                 }
