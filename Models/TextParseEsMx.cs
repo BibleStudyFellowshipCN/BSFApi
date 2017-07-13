@@ -7,7 +7,7 @@
     using System.Reflection;
     using System.Text.RegularExpressions;
 
-    public class TextParseEsMx : ITextParser
+    public class TextParseEsMx : AbstractParser
     {
         private static Regex DayPattern = new Regex("^([A-Z]+) DÍA:", RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
@@ -27,21 +27,10 @@
             {"SEXTO", "6TO" },
         };
 
-        private readonly IDictionary<Regex, MethodInfo> methodMappings;
-
-        private readonly Regex versePattern;
-
-        internal TextParseEsMx(int year, CultureInfo culture, Regex versePattern, IDictionary<Regex, MethodInfo> methodMappings)
+        internal TextParseEsMx(int year, CultureInfo culture, IDictionary<Regex, MethodInfo> methodMappings, Regex versePattern)
+            : base(year, culture, methodMappings, versePattern)
         {
-            this.Year = year;
-            this.Culture = culture;
-            this.versePattern = versePattern;
-            this.methodMappings = methodMappings;
         }
-
-        public int Year { get; }
-
-        public CultureInfo Culture { get; }
 
         public static TextParseEsMx Create(int year, IRepository repository)
         {
@@ -51,43 +40,7 @@
             var culture = CultureInfo.CreateSpecificCulture("es-MX");
             var versePattern = TextParseEsMx.GetBibleVersePattern(repository, culture.Name);
 
-            return new TextParseEsMx(year, culture, versePattern, methodMappings);
-        }
-
-        public Lesson Parse(string input)
-        {
-            input = input.Replace('\t', ' ');
-            var lesson = new Lesson { Culture = this.Culture.Name };
-
-            var lines = input.Split(new[] { Environment.NewLine }, StringSplitOptions.None).ToList();
-            var sectionLines = new List<string>();
-            MethodInfo currentSection = null;
-            foreach (var line in lines)
-            {
-                foreach (var mapping in this.methodMappings)
-                {
-                    if (mapping.Key.IsMatch(line))
-                    {
-                        if (currentSection != null)
-                        {
-                            currentSection.Invoke(this, new object[] { lesson, sectionLines });
-                            sectionLines.Clear();
-                        }
-
-                        currentSection = mapping.Value;
-                        break;
-                    }
-                }
-
-                sectionLines.Add(line);
-            }
-
-            if (currentSection != null)
-            {
-                currentSection.Invoke(this, new object[] { lesson, sectionLines });
-            }
-
-            return lesson;
+            return new TextParseEsMx(year, culture, methodMappings, versePattern);
         }
 
         [Section(@"^Lección \d+: ")]
@@ -220,42 +173,12 @@
         {
         }
 
-        private static Regex GetBibleVersePattern(IRepository repository, string culture)
-        {
-            var suffix = " *([0-9]+ *: *[0-9]+ *((- *[0-9]+ *(: *[0-9]+)?)?)?)";
-            var books = repository.GetBibleBooks(culture);
-            var pattern = "(" + string.Join("|", books.SelectMany(book => new[] { book.Name, book.Shorthand })) + ")" + suffix;
-            return new Regex(pattern, RegexOptions.Compiled | RegexOptions.IgnoreCase);
-        }
-
-        private static Regex GetRegex(MethodInfo methodInfo)
-        {
-            var pattern = methodInfo.GetCustomAttributes(false).OfType<SectionAttribute>().First().Mark;
-
-            return new Regex(pattern, RegexOptions.Compiled | RegexOptions.IgnoreCase);
-        }
-
         private static int GetNumberOfBulletins(IList<string> lines)
         {
             var count = 0;
             foreach (var line in lines)
             {
                 if (TextParseEsMx.BulletinPattern.IsMatch(line))
-                {
-                    count++;
-                }
-            }
-
-            return count;
-        }
-
-        private int GetNumberOfVerses(IList<string> lines)
-        {
-            var count = 0;
-            foreach (var line in lines)
-            {
-                var match = this.versePattern.Match(line);
-                if (match.Success && match.Value == line)
                 {
                     count++;
                 }
@@ -289,23 +212,6 @@
             };
 
             lesson.DayQuestions.Last().Questions.Add(question);
-        }
-
-        private IList<VerseItem> ExtractVerse(string text)
-        {
-            var items = new List<VerseItem>();
-            var collection = this.versePattern.Matches(text);
-            foreach (Match match in collection)
-            {
-                var item = new VerseItem
-                {
-                    Book = match.Groups[1].Value.Trim(),
-                    Verse = match.Groups[2].Value.Replace(" ", string.Empty),
-                };
-                items.Add(item);
-            }
-
-            return items;
         }
     }
 }
