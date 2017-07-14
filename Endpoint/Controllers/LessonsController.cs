@@ -21,6 +21,13 @@
             this.repository = repository;
         }
 
+        // GET api/values
+        [SwaggerOperation("GetAll")]
+        public IEnumerable<Lesson> Get(string culture)
+        {
+            return this.repository.GetLessons(culture);
+        }
+
         // GET api/values/5
         [SwaggerOperation("GetById")]
         [SwaggerResponse(HttpStatusCode.OK)]

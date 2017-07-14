@@ -11,6 +11,8 @@
 
         Task AddLessonAsync(Lesson lesson);
 
+        IEnumerable<Lesson> GetLessons(string culture);
+
         Lesson GetLesson(string culture, string id);
 
         Task AddFeedbackAsync(Feedback feedback);

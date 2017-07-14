@@ -66,6 +66,13 @@
             return this.lessonTable.ExecuteAsync(insertOperation);
         }
 
+        public IEnumerable<Lesson> GetLessons(string culture)
+        {
+            var filter = TableQuery.GenerateFilterCondition("PartitionKey", QueryComparisons.Equal, culture);
+            var query = new TableQuery().Where(filter);
+            return this.lessonTable.ExecuteQuery(query).Select(item => item.ToLesson());
+        }
+
         public Lesson GetLesson(string culture, string id)
         {
             var retrieveOperation = TableOperation.Retrieve<DynamicTableEntity>(culture, id);
