@@ -5,11 +5,11 @@
 
     public interface IRepository
     {
-        Task AddStudyAsync(Study study);
+        Task UpsertStudyAsync(Study study);
 
         IEnumerable<Study> GetStudies(string culture);
 
-        Task AddLessonAsync(Lesson lesson);
+        Task UpsertLessonAsync(Lesson lesson);
 
         IEnumerable<Lesson> GetLessons(string culture);
 

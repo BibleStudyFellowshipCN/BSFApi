@@ -47,9 +47,9 @@
             return new Repository(studyTable, lessonTable, feedbackTable, bibleBookTable, bibleVerseTable);
         }
 
-        public Task AddStudyAsync(Study study)
+        public Task UpsertStudyAsync(Study study)
         {
-            var insertOperation = TableOperation.Insert(study.ToStorage());
+            var insertOperation = TableOperation.InsertOrReplace(study.ToStorage());
             return this.studyTable.ExecuteAsync(insertOperation);
         }
 
@@ -60,9 +60,9 @@
             return this.studyTable.ExecuteQuery(query).Select(item => item.ToStudy());
         }
 
-        public Task AddLessonAsync(Lesson lesson)
+        public Task UpsertLessonAsync(Lesson lesson)
         {
-            var insertOperation = TableOperation.Insert(lesson.ToStorage());
+            var insertOperation = TableOperation.InsertOrReplace(lesson.ToStorage());
             return this.lessonTable.ExecuteAsync(insertOperation);
         }
 

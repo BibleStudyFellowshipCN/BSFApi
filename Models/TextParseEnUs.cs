@@ -72,11 +72,12 @@
             lesson.MemoryVerse = string.Join(string.Empty, lines.Skip(1));
         }
 
-        [Section("^[A-Z]+ DAY:")]
+        [Section("^ *[A-Z]+ DAY:")]
         protected void ParseDay(Lesson lesson, IList<string> lines)
         {
-            var match = TextParseEnUs.DayPattern.Match(lines[0]);
-            var title = lines[0].Substring(match.Value.Length).Trim();
+            var firstLine = lines[0].Trim();
+            var match = TextParseEnUs.DayPattern.Match(firstLine);
+            var title = firstLine.Substring(match.Value.Length).Trim();
             var day = new Day
             {
                 Tab = TextParseEnUs.OrdinalMapping[match.Groups[1].Value],
