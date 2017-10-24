@@ -9,6 +9,7 @@
     using Church.BibleStudyFellowship.Models;
     using Church.BibleStudyFellowship.Models.PdfBox;
     using Church.BibleStudyFellowship.Models.Storage;
+    using Newtonsoft.Json;
 
     class Program
     {
@@ -35,6 +36,7 @@
             var parser = Program.GetParser(culture, year, repository);
             var lesson = parser.Parse(text);
             repository.UpsertLessonAsync(lesson).Wait();
+            Console.WriteLine(JsonConvert.SerializeObject(lesson));
 
             var item = new LessonItem
             {
@@ -44,14 +46,14 @@
                 ProposedDate = date.ToString(parser.Culture.DateTimeFormat.LongDatePattern)
             };
             var currentStudy = repository.GetStudies(culture.Name).FirstOrDefault(study => study.Title == title);
-            if(currentStudy==null)
+            if (currentStudy == null)
             {
                 currentStudy = new Study { Culture = parser.Culture.Name, Title = title, Lessons = new[] { item }.ToList() };
             }
             else
             {
                 var currentLesson = currentStudy.Lessons.FirstOrDefault(l => l.Id == item.Id);
-                if(currentLesson==null)
+                if (currentLesson == null)
                 {
                     currentStudy.Lessons.Add(item);
                 }
