@@ -3,8 +3,8 @@
     using System;
     using System.Configuration;
     using System.Globalization;
+    using System.IO;
     using System.Linq;
-    using System.Text.RegularExpressions;
 
     using Church.BibleStudyFellowship.Models;
     using Church.BibleStudyFellowship.Models.PdfBox;
@@ -31,7 +31,8 @@
             var lessonFormat = args[5];
             var lessonNumber = int.Parse(args[6]);
 
-            var text = Utilities.ReadFromPdf(input);
+            var text = "pdf".Equals(Path.GetExtension(input), StringComparison.OrdinalIgnoreCase) ?
+                Utilities.ReadFromPdf(input) : File.ReadAllText(input);
             var repository = Repository.Create(appSettings["ConnectionString"]);
             var parser = Program.GetParser(culture, year, repository);
             var lesson = parser.Parse(text);
@@ -82,14 +83,6 @@
                 default:
                     throw new NotImplementedException("Could not find the culture");
             }
-        }
-
-        private static Regex GetBibleVersePattern(IRepository repository, string culture)
-        {
-            var suffix = " *([0-9]+ *: *[0-9]+ *((- *[0-9]+ *(: *[0-9]+)?)?)?)";
-            var books = repository.GetBibleBooks(culture);
-            var pattern = "(" + string.Join("|", books.SelectMany(book => new[] { book.Name, book.Shorthand })) + ")" + suffix;
-            return new Regex(pattern, RegexOptions.Compiled | RegexOptions.IgnoreCase);
         }
     }
 }

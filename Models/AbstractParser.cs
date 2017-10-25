@@ -102,17 +102,29 @@
                 var groups = verses.Split(';');
                 foreach(var group in groups)
                 {
-                    var parts = group.Split(':');
-                    var chapter = parts[0];
-                    var sections = parts[1].Split(',');
-                    foreach(var section in sections)
+                    if(group.Count(c=>c== ':') > 1)
                     {
                         var item = new VerseItem
                         {
                             Book = book,
-                            Verse = chapter + ":" + section,
+                            Verse = group,
                         };
                         items.Add(item);
+                    }
+                    else
+                    {
+                        var parts = group.Split(':');
+                        var chapter = parts[0];
+                        var sections = parts[1].Split(',');
+                        foreach (var section in sections)
+                        {
+                            var item = new VerseItem
+                            {
+                                Book = book,
+                                Verse = chapter + ":" + section,
+                            };
+                            items.Add(item);
+                        }
                     }
                 }
             }
