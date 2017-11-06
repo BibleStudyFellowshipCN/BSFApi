@@ -40,7 +40,7 @@
                 .Where(method => method.GetCustomAttributes(false).OfType<SectionAttribute>().Any());
             var methodMappings = methods.ToDictionary(TextParseZhTw.GetRegex);
             var culture = CultureInfo.CreateSpecificCulture(CultureName);
-            var versePattern = TextParseZhTw.GetBibleVersePattern(repository, culture.Name);
+            var versePattern = VersePatternCollection.Create(repository)[CultureName];
 
             return new TextParseZhTw(year, culture, methodMappings, versePattern);
         }

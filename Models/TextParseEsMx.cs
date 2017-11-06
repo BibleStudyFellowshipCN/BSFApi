@@ -34,11 +34,13 @@
 
         public static TextParseEsMx Create(int year, IRepository repository)
         {
+            const string CultureName = "es-MX";
+
             var methods = typeof(TextParseEsMx).GetMethods(BindingFlags.Instance | BindingFlags.NonPublic)
                 .Where(method => method.GetCustomAttributes(false).OfType<SectionAttribute>().Any());
             var methodMappings = methods.ToDictionary(TextParseEsMx.GetRegex);
-            var culture = CultureInfo.CreateSpecificCulture("es-MX");
-            var versePattern = TextParseEsMx.GetBibleVersePattern(repository, culture.Name);
+            var culture = CultureInfo.CreateSpecificCulture(CultureName);
+            var versePattern = VersePatternCollection.Create(repository)[CultureName];
 
             return new TextParseEsMx(year, culture, methodMappings, versePattern);
         }

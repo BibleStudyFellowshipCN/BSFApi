@@ -40,19 +40,19 @@
                 .Where(method => method.GetCustomAttributes(false).OfType<SectionAttribute>().Any());
             var methodMappings = methods.ToDictionary(TextParseZhCn.GetRegex);
             var culture = CultureInfo.CreateSpecificCulture(CultureName);
-            var versePattern = TextParseZhCn.GetBibleVersePattern(repository, culture.Name);
+            var versePattern = VersePatternCollection.Create(repository)[CultureName];
 
             return new TextParseZhCn(year, culture, methodMappings, versePattern);
         }
 
-        [Section(@"^BSF⑧第\d课")]
+        [Section(@"^BSF®第\d+课")]
         protected void ParseFotter1(Lesson lesson, IList<string> lines)
         {
-            const string Prefix = "BSF⑧第";
+            const string Prefix = "BSF®第";
 
             ExceptionUtilities.ThowInvalidOperationExceptionIfFalse(lines.Count > 3, "At least 4 lines.");
-            lesson.Id = string.Join("_", this.Year, lines[0].Substring(Prefix.Length, 1).Trim());
-            lesson.Name = lines[2];
+            lesson.Id = string.Join("_", this.Year, lines[2].Substring(Prefix.Length, lines[2].Length - Prefix.Length - 1).Trim());
+            lesson.Name = lines[6].Split(' ')[1];
         }
 
         [Section("^®$")]
@@ -60,12 +60,12 @@
         {
         }
 
-        [Section(@"www\.bsfinternational\.org \| ")]
+        [Section(@" \| www\.bsfinternational\.org")]
         protected void ParseFotter2(Lesson lesson, IList<string> lines)
         {
         }
 
-        [Section("^背诵经文")]
+        [Section(@"\| Adult Questions \| Lesson")]
         protected void ParseMemoryVerse(Lesson lesson, IList<string> lines)
         {
             ExceptionUtilities.ThowInvalidOperationExceptionIfFalse(lines.Count() > 1, "At least two lines.");
@@ -170,7 +170,7 @@
         {
         }
 
-        [Section(@"^Copyright © Bible Study Fellowship")]
+        [Section(@"^COPYRIGHT©Bible Study Fellowship")]
         protected void ParseEnding(Lesson lesson, IList<string> lines)
         {
         }

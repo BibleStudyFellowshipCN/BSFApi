@@ -61,14 +61,6 @@
             return lesson;
         }
 
-        protected static Regex GetBibleVersePattern(IRepository repository, string culture)
-        {
-            var suffix = "( *(([0-9]+) *:( *[0-9]+ *((- *[0-9]+ *(: *[0-9]+)?)?)?))( *,(( *[0-9]+ *((- *[0-9]+ *(: *[0-9]+)?)?)?)))*( *;( *(([0-9]+) *:( *[0-9]+ *((- *[0-9]+ *(: *[0-9]+)?)?)?))( *,(( *[0-9]+ *((- *[0-9]+ *(: *[0-9]+)?)?)?)))*))*)";
-            var books = repository.GetBibleBooks(culture);
-            var pattern = "(" + string.Join("|", books.SelectMany(book => new[] { book.Name, book.Shorthand })) + ")" + suffix;
-            return new Regex(pattern, RegexOptions.Compiled | RegexOptions.IgnoreCase);
-        }
-
         protected static Regex GetRegex(MethodInfo methodInfo)
         {
             var pattern = methodInfo.GetCustomAttributes(false).OfType<SectionAttribute>().First().Mark;

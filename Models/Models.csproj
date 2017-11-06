@@ -61,6 +61,7 @@
     <Compile Include="TextParseEsMx.cs" />
     <Compile Include="TextParseEnUs.cs" />
     <Compile Include="VerseItem.cs" />
+    <Compile Include="VersePatternCollection.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
