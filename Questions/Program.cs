@@ -31,7 +31,7 @@
             var lessonFormat = args[5];
             var lessonNumber = int.Parse(args[6]);
 
-            var text = "pdf".Equals(Path.GetExtension(input), StringComparison.OrdinalIgnoreCase) ?
+            var text = ".pdf".Equals(Path.GetExtension(input), StringComparison.OrdinalIgnoreCase) ?
                 Utilities.ReadFromPdf(input) : File.ReadAllText(input);
             var repository = Repository.Create(appSettings["ConnectionString"]);
             var parser = Program.GetParser(culture, year, repository);
