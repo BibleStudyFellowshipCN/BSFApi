@@ -11,14 +11,17 @@
     {
         private readonly IDictionary<Regex, MethodInfo> methodMappings;
 
+        private readonly VerseLocator verseLocator;
+
         private readonly Regex versePattern;
 
-        internal AbstractParser(int year, CultureInfo culture, IDictionary<Regex, MethodInfo> methodMappings, Regex versePattern)
+        internal AbstractParser(int year, CultureInfo culture, IDictionary<Regex, MethodInfo> methodMappings, VerseLocator verseLocator)
         {
             this.Year = year;
             this.Culture = culture;
             this.methodMappings = methodMappings;
-            this.versePattern = versePattern;
+            this.verseLocator = verseLocator;
+            this.versePattern = verseLocator.GetPattern();
         }
 
         public int Year { get; }
@@ -68,57 +71,13 @@
             return new Regex(pattern, RegexOptions.Compiled | RegexOptions.IgnoreCase);
         }
 
-        protected int GetNumberOfVerses(IList<string> lines)
-        {
-            var count = 0;
-            foreach (var line in lines)
-            {
-                var match = this.versePattern.Match(line);
-                if (match.Success && match.Value == line)
-                {
-                    count++;
-                }
-            }
-
-            return count;
-        }
-
         protected IList<VerseItem> ExtractVerse(string text)
         {
             var items = new List<VerseItem>();
             var collection = this.versePattern.Matches(text);
             foreach (Match match in collection)
             {
-                var book = match.Groups[1].Value.Trim();
-                var verses = match.Groups[2].Value.Replace(" ", string.Empty);
-                var groups = verses.Split(';');
-                foreach(var group in groups)
-                {
-                    if(group.Count(c=>c== ':') > 1)
-                    {
-                        var item = new VerseItem
-                        {
-                            Book = book,
-                            Verse = group,
-                        };
-                        items.Add(item);
-                    }
-                    else
-                    {
-                        var parts = group.Split(':');
-                        var chapter = parts[0];
-                        var sections = parts[1].Split(',');
-                        foreach (var section in sections)
-                        {
-                            var item = new VerseItem
-                            {
-                                Book = book,
-                                Verse = chapter + ":" + section,
-                            };
-                            items.Add(item);
-                        }
-                    }
-                }
+                items.AddRange(this.verseLocator.GetVerses(match));
             }
 
             return items;

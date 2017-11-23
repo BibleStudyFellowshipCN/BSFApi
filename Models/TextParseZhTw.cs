@@ -11,11 +11,9 @@
     {
         private static Regex DayPattern = new Regex("^第(.)天：", RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
-        private static Regex QuestionPattern = new Regex(@"^ *(\d+)\. ", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+        private static Regex QuestionPattern = new Regex(@"^ *(\d+)(\. *a)?\. ", RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
-        private static Regex BulletinPattern = new Regex(@"^ *[a-z]\. ", RegexOptions.Compiled | RegexOptions.IgnoreCase);
-
-        private static Regex QuotationPattern = new Regex(@"^“.+”$", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+        private static Regex SubQuestionPattern = new Regex(@"^ *([b-e])\. ", RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
         private static IDictionary<string, string> OrdinalMapping = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
         {
@@ -27,8 +25,10 @@
             {"六", "六" },
         };
 
-        internal TextParseZhTw(int year, CultureInfo culture, IDictionary<Regex, MethodInfo> methodMappings, Regex versePattern)
-            : base(year, culture, methodMappings, versePattern)
+        private static HashSet<char> SuffixSet = new HashSet<char> { '.', '。', '?', '？', ')', '）', ':', '：' };
+
+        internal TextParseZhTw(int year, CultureInfo culture, IDictionary<Regex, MethodInfo> methodMappings, VerseLocator verseLocator)
+            : base(year, culture, methodMappings, verseLocator)
         {
         }
 
@@ -40,9 +40,9 @@
                 .Where(method => method.GetCustomAttributes(false).OfType<SectionAttribute>().Any());
             var methodMappings = methods.ToDictionary(TextParseZhTw.GetRegex);
             var culture = CultureInfo.CreateSpecificCulture(CultureName);
-            var versePattern = VersePatternCollection.Create(repository)[CultureName];
+            var verseLocator = VerseLocator.Create(repository.GetBibleBooks(CultureName));
 
-            return new TextParseZhTw(year, culture, methodMappings, versePattern);
+            return new TextParseZhTw(year, culture, methodMappings, verseLocator);
         }
 
         [Section(@"^BSF⑧第\d課")]
@@ -51,8 +51,9 @@
             const string Prefix = "BSF⑧第";
 
             ExceptionUtilities.ThowInvalidOperationExceptionIfFalse(lines.Count > 3, "At least 4 lines.");
-            lesson.Id = string.Join("_", this.Year, lines[0].Substring(Prefix.Length, 1).Trim());
-            lesson.Name = lines[2];
+            lesson.Id = string.Join("_", this.Year, lines[2].Substring(Prefix.Length, lines[2].Length - Prefix.Length - 1).Trim());
+            ////lesson.Id = string.Join("_", this.Year, lines[4].Substring(Prefix.Length, lines[4].Length - Prefix.Length - 1).Trim());
+            lesson.Name = lines[6].Split(' ')[1];
         }
 
         [Section("^®$")]
@@ -60,12 +61,12 @@
         {
         }
 
-        [Section(@"www\.bsfinternational\.org \| ")]
+        [Section(@" \| www\.bsfinternational\.org")]
         protected void ParseFotter2(Lesson lesson, IList<string> lines)
         {
         }
 
-        [Section("^背誦經文")]
+        [Section(@"\| Adult Questions \| Lesson")]
         protected void ParseMemoryVerse(Lesson lesson, IList<string> lines)
         {
             ExceptionUtilities.ThowInvalidOperationExceptionIfFalse(lines.Count() > 1, "At least two lines.");
@@ -99,69 +100,29 @@
             var match = TextParseZhTw.QuestionPattern.Match(lines[0]);
             var questionOrder = match.Groups[1].Value;
             lines[0] = lines[0].Substring(match.Value.Length);
-            var numberOfQuestions = 1;
-            if ((numberOfQuestions = TextParseZhTw.GetNumberOfBulletins(lines)) > 1)
+            var questions = TextParseZhTw.GetSubquestions(lines);
+            var count = 1;
+            foreach (var line in questions)
             {
-                var top = 0;
-                while (!TextParseZhTw.BulletinPattern.IsMatch(lines[top]))
-                {
-                    top++;
-                    break;
-                }
+                var id = string.Join(Separator, this.Year, lesson.DayQuestions.Count(), questionOrder, count++);
+                this.AddQuestion(lesson, match.Groups[0].Value + line, id);
+            }
+        }
 
-                var questions = new List<string>();
-                foreach (var line in lines.Skip(top))
-                {
-                    if (TextParseZhTw.BulletinPattern.IsMatch(line))
-                    {
-                        questions.Add(line.Trim());
-                    }
-                    else
-                    {
-                        questions[questions.Count() - 1] += " " + line.Trim();
-                    }
-                }
+        [Section(@"^ *[b-e]\. ")]
+        protected void ParseSubquestion(Lesson lesson, IList<string> lines)
+        {
+            const string Separator = "_";
 
-                var count = 1;
-                var id = string.Join(Separator, this.Year, lesson.DayQuestions.Count(), questionOrder, count);
-                var firstQuestion = lines.Take(top).Union(questions.Take(1));
-                this.AddQuestion(lesson, firstQuestion, id, questionOrder);
-                foreach (var line in questions.Skip(1))
-                {
-                    id = string.Join(Separator, this.Year, lesson.DayQuestions.Count(), questionOrder, ++count);
-                    this.AddQuestion(lesson, new[] { line }, id, questionOrder);
-                }
-            }
-            else if ((numberOfQuestions = this.GetNumberOfVerses(lines)) > 1)
+            var match = TextParseZhTw.SubQuestionPattern.Match(lines[0]);
+            lines[0] = lines[0].Substring(match.Value.Length);
+            var questions = TextParseZhTw.GetSubquestions(lines);
+            var parts = lesson.DayQuestions.Last().Questions.Last().Id.Split(new[] { Separator }, StringSplitOptions.None).ToList();
+            var count = int.Parse(parts.Last());
+            foreach (var line in questions)
             {
-                var top = lines.Count - numberOfQuestions;
-                var count = 1;
-                var id = string.Join(Separator, this.Year, lesson.DayQuestions.Count(), questionOrder, count);
-                this.AddQuestion(lesson, lines.Take(top), id, questionOrder);
-                lesson.DayQuestions.Last().Questions.Last().QuestionText += "\n" + lines[top + 1];
-                foreach (var line in lines.Skip(top + 1))
-                {
-                    id = string.Join(Separator, this.Year, lesson.DayQuestions.Count(), questionOrder, ++count);
-                    this.AddQuestion(lesson, new[] { line }, id, questionOrder);
-                }
-            }
-            else if ((numberOfQuestions = TextParseZhTw.GetNumberOfQuotations(lines)) > 1)
-            {
-                var top = lines.Count - numberOfQuestions;
-                var count = 1;
-                var id = string.Join(Separator, this.Year, lesson.DayQuestions.Count(), questionOrder, count);
-                this.AddQuestion(lesson, lines.Take(top), id, questionOrder);
-                lesson.DayQuestions.Last().Questions.Last().QuestionText += "\n" + lines[top + 1];
-                foreach (var line in lines.Skip(top + 1))
-                {
-                    id = string.Join(Separator, this.Year, lesson.DayQuestions.Count(), questionOrder, ++count);
-                    this.AddQuestion(lesson, new[] { line }, id, questionOrder);
-                }
-            }
-            else
-            {
-                var id = string.Join(Separator, this.Year, lesson.DayQuestions.Count(), questionOrder);
-                this.AddQuestion(lesson, lines, id, questionOrder);
+                var id = string.Join(Separator, parts[0], parts[1], parts[2], ++count);
+                this.AddQuestion(lesson, parts[2] + ". " + match.Groups[0].Value + line, id);
             }
         }
 
@@ -175,42 +136,43 @@
         {
         }
 
-        private static int GetNumberOfBulletins(IList<string> lines)
+        private static IList<string> GetSubquestions(IList<string> lines)
         {
-            var count = 0;
-            foreach (var line in lines)
+            var index = 0;
+
+            // Remove empty lines.
+            lines = lines.Where(line => !string.IsNullOrEmpty(line)).ToList();
+
+            char lastChar;
+            do
             {
-                if (TextParseZhTw.BulletinPattern.IsMatch(line))
-                {
-                    count++;
-                }
+                lastChar = lines[index].TrimEnd().LastOrDefault();
+                index++;
+            }
+            while (index < lines.Count && !TextParseZhTw.SuffixSet.Contains(lastChar));
+
+            if (index >= lines.Count - 1)
+            {
+                return new[] { string.Join(" ", lines.Select(TextParseZhTw.TrimEnding)) };
             }
 
-            return count;
+            var questions = new List<string> { string.Join(" ", lines.Take(index + 1).Select(TextParseZhTw.TrimEnding)) };
+            questions.AddRange(lines.Skip(index + 1).Select(TextParseZhTw.TrimEnding));
+            return questions;
         }
 
-        private static int GetNumberOfQuotations(IList<string> lines)
+        private static string TrimEnding(string line)
         {
-            var count = 0;
-            foreach (var line in lines)
-            {
-                if (TextParseZhTw.QuotationPattern.IsMatch(line))
-                {
-                    count++;
-                }
-            }
-
-            return count;
+            return line.TrimEnd('_', ' ');
         }
 
-        private void AddQuestion(Lesson lesson, IEnumerable<string> lines, string id, string questionOrder)
+        private void AddQuestion(Lesson lesson, string line, string id)
         {
-            var text = questionOrder + ". " + string.Join(string.Empty, lines);
             var question = new Question
             {
                 Id = id,
-                QuestionText = text,
-                Quotes = this.ExtractVerse(text),
+                QuestionText = line,
+                Quotes = this.ExtractVerse(line),
             };
 
             lesson.DayQuestions.Last().Questions.Add(question);

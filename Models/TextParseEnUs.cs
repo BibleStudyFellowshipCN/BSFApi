@@ -27,8 +27,8 @@
 
         private static HashSet<char> SuffixSet = new HashSet<char> { '.', '?', ')', ':' };
 
-        internal TextParseEnUs(int year, CultureInfo culture, IDictionary<Regex, MethodInfo> methodMappings, Regex versePattern)
-            : base(year, culture, methodMappings, versePattern)
+        internal TextParseEnUs(int year, CultureInfo culture, IDictionary<Regex, MethodInfo> methodMappings, VerseLocator verseLocator)
+            : base(year, culture, methodMappings, verseLocator)
         {
         }
 
@@ -40,9 +40,9 @@
                 .Where(method => method.GetCustomAttributes(false).OfType<SectionAttribute>().Any());
             var methodMappings = methods.ToDictionary(TextParseEnUs.GetRegex);
             var culture = CultureInfo.CreateSpecificCulture(CultureName);
-            var versePattern = VersePatternCollection.Create(repository)[CultureName];
+            var verseLocator = VerseLocator.Create(repository.GetBibleBooks(CultureName));
 
-            return new TextParseEnUs(year, culture, methodMappings, versePattern);
+            return new TextParseEnUs(year, culture, methodMappings, verseLocator);
         }
 
         [Section(@"Lesson \d+ \| www\.bsfinternational\.org")]
