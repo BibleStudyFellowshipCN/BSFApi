@@ -40,7 +40,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AbstractParser.cs" />
+    <Compile Include="AbstractTextParser.cs" />
     <Compile Include="VerseLocator.cs" />
     <Compile Include="BibleBook.cs" />
     <Compile Include="BibleVerse.cs" />

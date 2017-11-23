@@ -7,7 +7,7 @@
     using System.Reflection;
     using System.Text.RegularExpressions;
 
-    public class TextParseEnUs : AbstractParser
+    public class TextParseEnUs : AbstractTextParser
     {
         private static Regex DayPattern = new Regex("^([A-Z]+) DAY:", RegexOptions.Compiled | RegexOptions.IgnoreCase);
 

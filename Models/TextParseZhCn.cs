@@ -7,7 +7,7 @@
     using System.Reflection;
     using System.Text.RegularExpressions;
 
-    public class TextParseZhCn : AbstractParser
+    public class TextParseZhCn : AbstractTextParser
     {
         private static Regex DayPattern = new Regex("^第(.)天：", RegexOptions.Compiled | RegexOptions.IgnoreCase);
 

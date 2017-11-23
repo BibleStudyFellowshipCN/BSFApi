@@ -7,7 +7,7 @@
     using System.Reflection;
     using System.Text.RegularExpressions;
 
-    public abstract class AbstractParser : ITextParser
+    public abstract class AbstractTextParser : ITextParser
     {
         private readonly IDictionary<Regex, MethodInfo> methodMappings;
 
@@ -15,7 +15,7 @@
 
         private readonly Regex versePattern;
 
-        internal AbstractParser(int year, CultureInfo culture, IDictionary<Regex, MethodInfo> methodMappings, VerseLocator verseLocator)
+        internal AbstractTextParser(int year, CultureInfo culture, IDictionary<Regex, MethodInfo> methodMappings, VerseLocator verseLocator)
         {
             this.Year = year;
             this.Culture = culture;
