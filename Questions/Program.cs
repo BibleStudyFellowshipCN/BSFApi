@@ -68,7 +68,7 @@
             repository.UpsertStudyAsync(currentStudy).Wait();
         }
 
-        private static AbstractParser GetParser(CultureInfo cultureInfo, int year, IRepository repository)
+        private static AbstractTextParser GetParser(CultureInfo cultureInfo, int year, IRepository repository)
         {
             switch(cultureInfo.Name)
             {

@@ -77,17 +77,18 @@
         {
             var match = TextParseEsMx.DayPattern.Match(lines[0]);
             var title = lines[0].Substring(match.Value.Length).Trim();
+            if (lines.Count > 1)
+            {
+                title += " " + string.Join(" ", lines.Skip(1).Select(line => line.Trim()));
+            }
+
             var day = new Day
             {
                 Tab = TextParseEsMx.OrdinalMapping[match.Groups[1].Value],
+                TitleParts = this.ExtractParts(title),
                 Title = title,
                 ReadVerse = this.ExtractVerse(title),
             };
-            if (lines.Count > 1)
-            {
-                day.Title += " " + string.Join(string.Empty, lines.Skip(1));
-            }
-
             lesson.DayQuestions.Add(day);
         }
 
@@ -166,6 +167,7 @@
             var question = new Question
             {
                 Id = id,
+                TextParts = this.ExtractParts(line),
                 QuestionText = line,
                 Quotes = this.ExtractVerse(line),
             };

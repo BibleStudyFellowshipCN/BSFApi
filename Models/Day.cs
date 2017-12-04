@@ -8,9 +8,12 @@
         {
             this.ReadVerse = new List<VerseItem>();
             this.Questions = new List<Question>();
+            this.TitleParts = new List<TextPart>();
         }
 
         public string Tab { get; set; }
+
+        public IList<TextPart> TitleParts { get; set; }
 
         public string Title { get; set; }
 
