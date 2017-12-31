@@ -1,5 +1,6 @@
 ﻿import * as React from 'react';
 import { RouteComponentProps } from 'react-router'
+import { Link } from 'react-router-dom';
 import 'isomorphic-fetch';
 
 interface FetchLessonDataState {
@@ -71,7 +72,7 @@ export class LessonTab extends React.Component<RouteComponentProps<{}>, FetchLes
 
     private locateVerses(text: string) {
         return text.split(this.state.verseLocator)
-            .map((part: string, index: number) => index % 2 === 0 ? part : <a href={part} target="_blank">{part}</a>);
+            .map((part: string, index: number) => index % 2 === 0 ? part : <Link to={"/Verses/" + part}>{part}</Link>);
     }
 }
 
