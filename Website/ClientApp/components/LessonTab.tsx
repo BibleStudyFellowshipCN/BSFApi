@@ -39,14 +39,14 @@ export class LessonTab extends React.Component<RouteComponentProps<{}>, FetchLes
             : this.renderQuestionPage(this.state.lesson);
 
         return <div>
-            <h1>{this.state.lesson.name} {this.state.lesson.id}</h1>
+            <h1>{this.state.lesson.name}</h1>
             {contents}
         </div>;
     }
 
     private renderQuestionPage(lesson: Lesson) {
         return <div className="question">
-            <p>背诵经文：{lesson.memoryVerse}</p>
+            <div>背诵经文：<b>{lesson.memoryVerse}</b></div>
             <div>{this.renderDayQuestions(lesson.dayQuestions)}</div>
         </div>;
     }
@@ -54,7 +54,7 @@ export class LessonTab extends React.Component<RouteComponentProps<{}>, FetchLes
     private renderDayQuestions(days: Day[]) {
         return days.map(
             day => <div>
-                <p>{day.tab} {this.locateVerses(day.title)}</p>
+                <h3>{day.tab} {this.locateVerses(day.title)}</h3>
                 <div>{this.renderQuestions(day.questions)}</div>
             </div>
         );
