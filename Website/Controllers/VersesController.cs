@@ -8,10 +8,9 @@ namespace Website.Controllers
     {
         private readonly IRepository repository;
 
-        public VersesController()
+        public VersesController(IRepository repository)
         {
-            var connectionString = "DefaultEndpointsProtocol=https;AccountName=bsfmaterial;AccountKey=mCantqlbmZavlKEEhaWVXWxXBwf3+AfLeSgEX3zVkEtTgq7B2xAs8lNmm08nSF//HfY3BijIMGWCNQUpNo2tvg==;EndpointSuffix=core.windows.net";
-            this.repository = Church.BibleStudyFellowship.Models.Storage.Repository.Create(connectionString);
+            this.repository = repository;
         }
 
         [HttpGet("Pattern")]
