@@ -60,6 +60,14 @@
             return this.studyTable.ExecuteQuery(query).Select(item => item.ToStudy());
         }
 
+        public Study GetStudy(string culture, string title)
+        {
+            var retrieveOperation = TableOperation.Retrieve<DynamicTableEntity>(culture, title);
+            var tableResult = this.studyTable.ExecuteAsync(retrieveOperation).Result;
+            ExceptionUtilities.ThowInvalidOperationExceptionIfFalse(tableResult.Result != null, $"Could not find the study on ({culture},{title})");
+            return ((DynamicTableEntity)tableResult.Result).ToStudy();
+        }
+
         public Task UpsertLessonAsync(Lesson lesson)
         {
             var insertOperation = TableOperation.InsertOrReplace(lesson.ToStorage());
@@ -134,7 +142,7 @@
         private static CloudTable CreateTableIfNotExist(CloudTableClient client, string name)
         {
             var table = client.GetTableReference(name);
-            if(!table.Exists())
+            if (!table.Exists())
             {
                 table.CreateIfNotExists();
             }

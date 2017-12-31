@@ -9,6 +9,8 @@
 
         IEnumerable<Study> GetStudies(string culture);
 
+        Study GetStudy(string culture, string title);
+
         Task UpsertLessonAsync(Lesson lesson);
 
         IEnumerable<Lesson> GetLessons(string culture);
