@@ -64,7 +64,7 @@ export class LessonTab extends React.Component<RouteComponentProps<{}>, FetchLes
     private renderQuestions(questions: Question[]) {
         return questions.map(
             question => <div>
-                <p>{this.locateVerses(question.questionText)}</p>
+                <p>{this.locateVerses(question.text)}</p>
                 <textarea>{question.answer}</textarea>
             </div>
         );
@@ -93,6 +93,6 @@ interface Day {
 
 interface Question {
     id: string;
-    questionText: string;
+    text: string;
     answer: string;
 }
