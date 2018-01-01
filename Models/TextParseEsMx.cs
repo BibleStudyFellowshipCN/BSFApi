@@ -48,11 +48,13 @@
         [Section(@"^Lección \d+: ")]
         protected void ParseFotter1(Lesson lesson, IList<string> lines)
         {
-            const string Prefix = "BSF® Lección ";
+            const string Prefix = "BSF® ";
 
             ExceptionUtilities.ThowInvalidOperationExceptionIfFalse(lines.Count > 3, "At least 4 lines.");
-            lesson.Id = string.Join("_", this.Year, lines[1].Substring(Prefix.Length).Trim());
-            lesson.Name = lines[3];
+            var name = lines[1].Substring(Prefix.Length).Trim();
+            var order = AbstractTextParser.ExtractOrder(name);
+            lesson.Id = this.Year + "_" + order.ToString("02d");
+            lesson.Name = lines[3] + " " + name;
         }
 
         [Section("^®$")]
@@ -85,7 +87,6 @@
             var day = new Day
             {
                 Tab = TextParseEsMx.OrdinalMapping[match.Groups[1].Value],
-                TitleParts = this.ExtractParts(title),
                 Title = title,
                 ReadVerse = this.ExtractVerse(title),
             };
@@ -160,19 +161,6 @@
         private static string TrimEnding(string line)
         {
             return line.TrimEnd('_', ' ');
-        }
-
-        private void AddQuestion(Lesson lesson, string line, string id)
-        {
-            var question = new Question
-            {
-                Id = id,
-                TextParts = this.ExtractParts(line),
-                QuestionText = line,
-                Quotes = this.ExtractVerse(line),
-            };
-
-            lesson.DayQuestions.Last().Questions.Add(question);
         }
     }
 }

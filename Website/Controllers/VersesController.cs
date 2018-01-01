@@ -17,7 +17,7 @@ namespace Website.Controllers
         public string GetPattern(string culture)
         {
             var verseLocator = VerseLocator.Create(repository.GetBibleBooks(culture));
-            return verseLocator.GetPattern();
+            return verseLocator.GetPattern(true);
         }
     }
 }

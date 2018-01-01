@@ -6,8 +6,8 @@
 
     public class VerseLocator
     {
-        // (;* *((\d+) *:( *\d+ *((- *\d+ *(: *\d+)?)?)?))( *,(( *\d+ *((- *\d+ *(: *\d+)?)?)?)))*)+
-        const string VerseFormat = @"([{3}]* *((\d+) *[{0}]( *\d+ *(([{1}] *\d+ *([{0}] *\d+)?)?)?))( *[{2}](( *\d+ *(([{1}] *\d+ *([{0}] *\d+)?)?)?)))*)+";
+        // (;* *(\d+ *:( *\d+ *((- *\d+ *(: *\d+)?)?)?))( *,(( *\d+ *((- *\d+ *(: *\d+)?)?)?)))*)+
+        const string VerseFormat = @"(?:[{3}]* *(?:\d+ *[{0}](?: *\d+ *(?:(?:[{1}] *\d+ *(?:[{0}] *\d+)?)?)?))(?: *[{2}](?:(?: *\d+ *(?:(?:[{1}] *\d+ *([{0}] *\d+)?)?)?)))*)+";
 
         private readonly string books;
 
@@ -59,7 +59,7 @@
             return new VerseLocator(bookString, chapterSeparators, verseConnectors, verseSeparators, groupSeparators);
         }
 
-        public virtual Regex GetPattern()
+        public string GetPattern(bool hasSingleGroup)
         {
             var versePattern = string.Format(
                 VerseLocator.VerseFormat,
@@ -67,11 +67,12 @@
                 this.verseConnectors,
                 this.verseSeparators,
                 this.groupSeparators);
-            var pattern = "(" + this.books + ")" + "(" + versePattern + ")";
-            return new Regex(pattern, RegexOptions.Compiled | RegexOptions.IgnoreCase);
+            return hasSingleGroup
+                ? "((?:" + this.books + ")" + "(?:" + versePattern + "))"
+                : "(" + this.books + ")" + "(" + versePattern + ")";
         }
 
-        public virtual IList<VerseItem> GetVerses(Match match)
+        public IList<VerseItem> GetVerses(Match match)
         {
             var items = new List<VerseItem>();
             var book = match.Groups[1].Value.Trim();

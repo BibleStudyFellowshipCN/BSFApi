@@ -15,9 +15,9 @@
     {
         static void Main(string[] args)
         {
-            if (args.Length < 7)
+            if (args.Length < 5)
             {
-                Console.WriteLine("Questions <culture> <filename> <year> <date> <title> <lesson format> <lesson number>");
+                Console.WriteLine("Questions <culture> <filename> <year> <date> <title>");
                 return;
             }
 
@@ -28,8 +28,6 @@
             var year = int.Parse(args[2]);
             var date = DateTime.Parse(args[3]);
             var title = args[4];
-            var lessonFormat = args[5];
-            var lessonNumber = int.Parse(args[6]);
 
             var text = ".pdf".Equals(Path.GetExtension(input), StringComparison.OrdinalIgnoreCase) ?
                 Utilities.ReadFromPdf(input) : File.ReadAllText(input);
@@ -41,8 +39,7 @@
 
             var item = new LessonItem
             {
-                Id = parser.Year + "_" + lessonNumber,
-                Order = string.Format(lessonFormat, lessonNumber),
+                Id = lesson.Id,
                 Name = lesson.Name,
                 ProposedDate = date.ToString(parser.Culture.DateTimeFormat.LongDatePattern)
             };

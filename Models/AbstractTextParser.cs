@@ -21,7 +21,8 @@
             this.Culture = culture;
             this.methodMappings = methodMappings;
             this.verseLocator = verseLocator;
-            this.versePattern = verseLocator.GetPattern();
+            var pattern = verseLocator.GetPattern(false);
+            this.versePattern = new Regex(pattern, RegexOptions.Compiled | RegexOptions.IgnoreCase);
         }
 
         public int Year { get; }
@@ -71,6 +72,33 @@
             return new Regex(pattern, RegexOptions.Compiled | RegexOptions.IgnoreCase);
         }
 
+        protected static int ExtractOrder(string line)
+        {
+            const string Pattern = @"(\d+)";
+
+            var regex = new Regex(Pattern);
+            var match = regex.Match(line);
+            if(!match.Success)
+            {
+                throw new FormatException($"Could not find lesson number from {line}.");
+            }
+
+            return int.Parse(match.Value);
+        }
+
+        protected void AddQuestion(Lesson lesson, string line, string id)
+        {
+            var question = new Question
+            {
+                Id = id,
+                QuestionText = line,
+                Text = line,
+                Quotes = this.ExtractVerse(line),
+            };
+
+            lesson.DayQuestions.Last().Questions.Add(question);
+        }
+
         protected IList<VerseItem> ExtractVerse(string text)
         {
             var items = new List<VerseItem>();
@@ -81,45 +109,6 @@
             }
 
             return items;
-        }
-
-        protected IList<TextPart> ExtractParts(string text)
-        {
-            var items = new List<TextPart>();
-            var collection = this.versePattern.Matches(text);
-
-            var loop = 0;
-            var lastPosition = 0;
-            while (loop < collection.Count)
-            {
-                var match = collection[loop];
-                AbstractTextParser.AddSimpleText(items, text.Substring(lastPosition, match.Index - lastPosition));
-                var verses = this.verseLocator.GetVerses(match);
-                items.AddRange(verses.Select(verse => new TextPart
-                {
-                    Style = TextPartStyle.Verse,
-                    Text = verse.Book + " " + verse.Verse,
-                }));
-                //// Sample code for a single item for verses
-                ////items.Add(new TextPart
-                ////{
-                ////    Style = TextPartStyle.Verse,
-                ////    Text = match.Value,
-                ////});
-                loop++;
-                lastPosition = match.Index + match.Length;
-            }
-
-            AbstractTextParser.AddSimpleText(items, text.Substring(lastPosition));
-            return items;
-        }
-
-        private static void AddSimpleText(IList<TextPart> items, string text)
-        {
-            if(!string.IsNullOrEmpty(text))
-            {
-                items.Add(new TextPart { Style = TextPartStyle.Normal, Text = text });
-            }
         }
     }
 }

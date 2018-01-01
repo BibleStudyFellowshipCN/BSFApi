@@ -56,7 +56,7 @@ export class StudyTab extends React.Component<RouteComponentProps<{}>, FetchStud
         const questionLink = `Lessons/${lesson.id}`;
         return <tr>
             <td>{lesson.proposedDate}</td>
-            <td>{lesson.order} 经文释义 <Link to={questionLink}>成人研经题</Link></td>
+            <td>{lesson.name} 经文释义 <Link to={questionLink}>成人研经题</Link></td>
         </tr>;
     }
 }
@@ -69,7 +69,6 @@ interface Study {
 
 interface LessonItem {
     id: string;
-    order: string;
     name: string;
     proposedDate: string;
 }
