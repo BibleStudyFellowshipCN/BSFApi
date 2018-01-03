@@ -6,7 +6,6 @@
 
     public class VerseLocator
     {
-        // (;* *(\d+ *:( *\d+ *((- *\d+ *(: *\d+)?)?)?))( *,(( *\d+ *((- *\d+ *(: *\d+)?)?)?)))*)+
         const string VerseFormat = @"(?:[{3}]* *(?:\d+ *[{0}](?: *\d+ *(?:(?:[{1}] *\d+ *(?:[{0}] *\d+)?)?)?))(?: *[{2}](?:(?: *\d+ *(?:(?:[{1}] *\d+ *([{0}] *\d+)?)?)?)))*)+";
 
         private readonly string books;
@@ -19,13 +18,27 @@
 
         private readonly string groupSeparators;
 
-        internal VerseLocator(string books, string chapterSeparators, string verseConnectors, string verseSeparators, string groupSeparators)
+        private readonly string chapterPattern;
+
+        private readonly string versePattern;
+
+        private readonly Regex verseRegex;
+
+        internal VerseLocator(string books, string chapterSeparators, string verseConnectors, string verseSeparators, string groupSeparators, string chapterPattern)
         {
             this.books = books;
             this.chapterSeparators = chapterSeparators;
             this.verseConnectors = verseConnectors;
             this.verseSeparators = verseSeparators;
             this.groupSeparators = groupSeparators;
+            this.chapterPattern = chapterPattern;
+            this.versePattern = string.Format(
+                VerseLocator.VerseFormat,
+                chapterSeparators,
+                verseConnectors,
+                verseSeparators,
+                groupSeparators);
+            this.verseRegex = new Regex(this.versePattern, RegexOptions.Compiled | RegexOptions.IgnoreCase);
         }
 
         public static VerseLocator Create(IEnumerable<BibleBook> books, bool includeShorthand = false)
@@ -38,45 +51,35 @@
             var bookString = includeShorthand ? string.Join("|", bibleBooks.SelectMany(book => new[] { book.Name, book.Shorthand }))
                 : string.Join("|", bibleBooks.Select(book => book.Name));
 
-            string chapterSeparators, verseConnectors, verseSeparators, groupSeparators;
             switch (bibleBooks[0].Culture)
             {
                 case "zh-CN":
                 case "zh-TW":
-                    chapterSeparators = ":：";
-                    verseConnectors = "-";
-                    verseSeparators = ",，、";
-                    groupSeparators = ";；";
-                    break;
+                    return new VerseLocatorZh(bookString);
                 default:
-                    chapterSeparators = ":";
-                    verseConnectors = "-";
-                    verseSeparators = ",";
-                    groupSeparators = ";";
-                    break;
+                    return new VerseLocator(bookString, ":", "-", ",", ";", @"(?:\d+)+");
             }
-
-            return new VerseLocator(bookString, chapterSeparators, verseConnectors, verseSeparators, groupSeparators);
         }
 
         public string GetPattern(bool hasSingleGroup)
         {
-            var versePattern = string.Format(
-                VerseLocator.VerseFormat,
-                this.chapterSeparators,
-                this.verseConnectors,
-                this.verseSeparators,
-                this.groupSeparators);
             return hasSingleGroup
-                ? "((?:" + this.books + ")" + "(?:" + versePattern + "))"
-                : "(" + this.books + ")" + "(" + versePattern + ")";
+                ? "((?:" + this.books + ")" + "(?:" + this.versePattern + "|" + this.chapterPattern + "))"
+                : "(" + this.books + ")" + "(" + this.versePattern + "|" + this.chapterPattern + ")";
         }
 
         public IList<VerseItem> GetVerses(Match match)
         {
-            var items = new List<VerseItem>();
+            ExceptionUtilities.ThrowArgumentNullExceptionIfNull(match, nameof(match));
+
             var book = match.Groups[1].Value.Trim();
             var verses = match.Groups[2].Value.Replace(" ", string.Empty);
+            if (!this.verseRegex.IsMatch(verses))
+            {
+                return this.TryGetChapters(book, verses);
+            }
+
+            var items = new List<VerseItem>();
             var groups = verses.Split(this.groupSeparators.ToCharArray());
             var chapterSeparatorSet = new HashSet<char>(this.chapterSeparators.ToArray());
             foreach (var group in groups)
@@ -108,6 +111,11 @@
             }
 
             return items;
+        }
+
+        protected virtual IList<VerseItem> TryGetChapters(string book, string text)
+        {
+            return new List<VerseItem>();
         }
     }
 }

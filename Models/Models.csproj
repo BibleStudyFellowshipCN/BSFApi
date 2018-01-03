@@ -41,7 +41,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AbstractTextParser.cs" />
-    <Compile Include="TextPart.cs" />
+    <Compile Include="VerseLocatorZh.cs" />
     <Compile Include="TextPartStyle.cs" />
     <Compile Include="VerseLocator.cs" />
     <Compile Include="BibleBook.cs" />

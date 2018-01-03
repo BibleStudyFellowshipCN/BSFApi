@@ -45,7 +45,7 @@ export class StudyTab extends React.Component<RouteComponentProps<{}>, FetchStud
                 </thead>
                 <tbody> {}
                     {study.lessons.sort(function (x, y) {
-                        return x.proposedDate < y.proposedDate ? 1 : x.proposedDate > y.proposedDate ? -1 : 0;
+                        return x.id < y.id ? 1 : x.id > y.id ? -1 : 0;
                     }).map(StudyTab.renderLesson)}
                 </tbody>
             </table>
