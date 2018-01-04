@@ -57,7 +57,7 @@
                 case "zh-TW":
                     return new VerseLocatorZh(bookString);
                 default:
-                    return new VerseLocator(bookString, ":", "-", ",", ";", @"(?:\d+)+");
+                    return new VerseLocator(bookString, ":", "-", ",", ";", @"(?: +\d+)+");
             }
         }
 
@@ -115,7 +115,17 @@
 
         protected virtual IList<VerseItem> TryGetChapters(string book, string text)
         {
-            return new List<VerseItem>();
+            var items = new List<VerseItem>();
+
+            // TODO: Check Roman 24 for multiple chapters
+            var item = new VerseItem
+            {
+                Book = book,
+                Verse = text + ":1-999",
+            };
+            items.Add(item);
+
+            return items;
         }
     }
 }

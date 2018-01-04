@@ -53,7 +53,7 @@
             ExceptionUtilities.ThowInvalidOperationExceptionIfFalse(lines.Count > 3, "At least 4 lines.");
             var name = lines[1].Substring(Prefix.Length).Trim();
             var order = AbstractTextParser.ExtractOrder(name);
-            lesson.Id = this.Year + "_" + order.ToString("02d");
+            lesson.Id = this.Year + "_" + order.ToString("D2");
             lesson.Name = lines[3] + " "+ name;
         }
 
