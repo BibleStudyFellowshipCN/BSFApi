@@ -1,12 +1,13 @@
 ﻿namespace Church.BibleStudyFellowship.Models
 {
+    using System;
     using System.Collections.Generic;
     using System.Linq;
     using System.Text.RegularExpressions;
 
     public class VerseLocator
     {
-        const string VerseFormat = @"(?:[{3}]* *(?:\d+ *[{0}](?: *\d+ *(?:(?:[{1}] *\d+ *(?:[{0}] *\d+)?)?)?))(?: *[{2}](?:(?: *\d+ *(?:(?:[{1}] *\d+ *([{0}] *\d+)?)?)?)))*)+";
+        const string VerseFormat = @"([{3}]* *(\d+ *[{0}]( *\d+ *(([{1}] *\d+ *([{0}] *\d+)?)?)?))( *[{2}](( *\d+ *(([{1}] *\d+ *([{0}] *\d+)?)?)?)))*)+";
 
         private readonly string books;
 
@@ -20,6 +21,8 @@
 
         private readonly string chapterPattern;
 
+        private readonly Regex chapterRegex;
+
         private readonly string versePattern;
 
         private readonly Regex verseRegex;
@@ -32,6 +35,7 @@
             this.verseSeparators = verseSeparators;
             this.groupSeparators = groupSeparators;
             this.chapterPattern = chapterPattern;
+            this.chapterRegex = new Regex(chapterPattern, RegexOptions.Compiled | RegexOptions.IgnoreCase);
             this.versePattern = string.Format(
                 VerseLocator.VerseFormat,
                 chapterSeparators,
@@ -56,16 +60,18 @@
                 case "zh-CN":
                 case "zh-TW":
                     return new VerseLocatorZh(bookString);
+                case "es-MX":
+                    return new VerseLocatorEs(bookString);
+                case "en-US":
+                    return new VerseLocatorEn(bookString);
                 default:
-                    return new VerseLocator(bookString, ":", "-", ",", ";", @"(?: +\d+)+");
+                    throw new NotSupportedException($"The culture '{bibleBooks[0].Culture}' is not supported.");
             }
         }
 
-        public string GetPattern(bool hasSingleGroup)
+        public string GetPattern()
         {
-            return hasSingleGroup
-                ? "((?:" + this.books + ")" + "(?:" + this.versePattern + "|" + this.chapterPattern + "))"
-                : "(" + this.books + ")" + "(" + this.versePattern + "|" + this.chapterPattern + ")";
+            return "(" + this.books + ")" + "(" + this.versePattern + "|" + this.chapterPattern + ")";
         }
 
         public IList<VerseItem> GetVerses(Match match)
@@ -73,14 +79,14 @@
             ExceptionUtilities.ThrowArgumentNullExceptionIfNull(match, nameof(match));
 
             var book = match.Groups[1].Value.Trim();
-            var verses = match.Groups[2].Value.Replace(" ", string.Empty);
+            var verses = match.Groups[2].Value.Trim();
             if (!this.verseRegex.IsMatch(verses))
             {
                 return this.TryGetChapters(book, verses);
             }
 
             var items = new List<VerseItem>();
-            var groups = verses.Split(this.groupSeparators.ToCharArray());
+            var groups = verses.Replace(" ", string.Empty).Split(this.groupSeparators.ToCharArray());
             var chapterSeparatorSet = new HashSet<char>(this.chapterSeparators.ToArray());
             foreach (var group in groups)
             {
@@ -113,17 +119,21 @@
             return items;
         }
 
-        protected virtual IList<VerseItem> TryGetChapters(string book, string text)
+        private IList<VerseItem> TryGetChapters(string book, string text)
         {
             var items = new List<VerseItem>();
-
-            // TODO: Check Roman 24 for multiple chapters
-            var item = new VerseItem
+            var parts = this.chapterRegex.Split(text);
+            int loop = 1;
+            while (loop < parts.Length)
             {
-                Book = book,
-                Verse = text + ":1-999",
-            };
-            items.Add(item);
+                var item = new VerseItem
+                {
+                    Book = book,
+                    Verse = parts[loop] + ":1-999",
+                };
+                items.Add(item);
+                loop += 2;
+            }
 
             return items;
         }

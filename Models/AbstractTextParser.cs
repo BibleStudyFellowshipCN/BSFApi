@@ -13,7 +13,7 @@
 
         private readonly VerseLocator verseLocator;
 
-        private readonly Regex versePattern;
+        private readonly Regex verseRegex;
 
         internal AbstractTextParser(int year, CultureInfo culture, IDictionary<Regex, MethodInfo> methodMappings, VerseLocator verseLocator)
         {
@@ -21,8 +21,8 @@
             this.Culture = culture;
             this.methodMappings = methodMappings;
             this.verseLocator = verseLocator;
-            var pattern = verseLocator.GetPattern(false);
-            this.versePattern = new Regex(pattern, RegexOptions.Compiled | RegexOptions.IgnoreCase);
+            var pattern = verseLocator.GetPattern();
+            this.verseRegex = new Regex(pattern, RegexOptions.Compiled | RegexOptions.IgnoreCase);
         }
 
         public int Year { get; }
@@ -102,7 +102,7 @@
         protected IList<VerseItem> ExtractVerse(string text)
         {
             var items = new List<VerseItem>();
-            var collection = this.versePattern.Matches(text);
+            var collection = this.verseRegex.Matches(text);
             foreach (Match match in collection)
             {
                 items.AddRange(this.verseLocator.GetVerses(match));

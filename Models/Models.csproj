@@ -41,6 +41,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AbstractTextParser.cs" />
+    <Compile Include="VerseLocatorEn.cs" />
+    <Compile Include="VerseLocatorEs.cs" />
     <Compile Include="VerseLocatorZh.cs" />
     <Compile Include="TextPartStyle.cs" />
     <Compile Include="VerseLocator.cs" />
