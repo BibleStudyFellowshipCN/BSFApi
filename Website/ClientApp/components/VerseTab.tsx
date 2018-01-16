@@ -3,7 +3,7 @@ import { RouteComponentProps } from 'react-router'
 import 'isomorphic-fetch';
 
 interface FetchVerseDataState {
-    verseSet: VerseSet;
+    chapters: Chapter[];
     loading: boolean;
 }
 
@@ -11,18 +11,24 @@ export class VerseTab extends React.Component<RouteComponentProps<{}>, FetchVers
     constructor() {
         super();
         this.state = {
-            verseSet: {} as VerseSet, loading: true
+            chapters: [] as Chapter[], loading: true
         };
     }
 
     componentDidMount() {
-        this.setState({ loading: false });
+        const lessonLink = `bible/zh-CN${this.props.match.url}`;
+
+        fetch(lessonLink)
+            .then(response => response.json() as Promise<Chapter[]>)
+            .then(data => {
+                this.setState({ chapters: data, loading: false });
+            });
     }
 
     public render() {
         let contents = this.state.loading
             ? <p><em>Loading...</em></p>
-            : this.renderQuestionPage(this.state.verseSet);
+            : this.renderVersePage(this.state.chapters);
 
         return <div>
             <h1>{this.props.match.url}</h1>
@@ -30,15 +36,27 @@ export class VerseTab extends React.Component<RouteComponentProps<{}>, FetchVers
         </div>;
     }
 
-    private renderQuestionPage(verseSet: VerseSet) {
-        return <div>Coming soon.</div>;
+    private renderVersePage(chapters: Chapter[]) {
+        return <div>{chapters.map(this.renderChapter)}</div>;
+    }
+
+    private renderChapter(chapter: Chapter) {
+        return <div>
+            <h2>Version: {chapter.version}, Chapter: {chapter.order}</h2>
+            {chapter.verses.map(verse => <p>{verse.order} {verse.text}</p>)}
+        </div>;
     }
 }
 
-interface VerseSet {
+interface Chapter {
+    version: string;
+    bookOrder: number;
+    order: number;
     culture: string;
-    id: string;
-    audio: string;
-    name: string;
-    memoryVerse: string;
+    verses: Verse[];
+}
+
+interface Verse {
+    order: number;
+    text: string;
 }

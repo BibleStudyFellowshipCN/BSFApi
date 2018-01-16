@@ -119,26 +119,6 @@
             return this.bibleBookTable.ExecuteQuery(query).Select(item => item.ToBibleBook());
         }
 
-        public async Task AddBibleVersesAsync(IEnumerable<BibleVerse> verses)
-        {
-            const int BatchSize = 50;
-
-            var batches = verses.Select((verse, index) => new { verse, index })
-                .GroupBy(verseIndex => verseIndex.index / BatchSize)
-                .Select(group => group.Select(verseIndex => verseIndex.verse));
-
-            foreach(var batch in batches)
-            {
-                var batchOperations = new TableBatchOperation();
-                foreach (var verse in verses)
-                {
-                    batchOperations.Insert(verse.ToStorage());
-                }
-
-                await this.bibleVerseTable.ExecuteBatchAsync(batchOperations);
-            }
-        }
-
         private static CloudTable CreateTableIfNotExist(CloudTableClient client, string name)
         {
             var table = client.GetTableReference(name);

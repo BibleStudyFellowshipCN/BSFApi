@@ -24,7 +24,5 @@
         Task AddBibleBooksAsync(IEnumerable<BibleBook> books);
 
         IEnumerable<BibleBook> GetBibleBooks(string culture);
-
-        Task AddBibleVersesAsync(IEnumerable<BibleVerse> verses);
     }
 }

@@ -28,6 +28,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Model.Storage\Model.Storage.csproj" />
+    <ProjectReference Include="..\Models.GetBible\Models.GetBible.csproj" />
     <ProjectReference Include="..\Models\Models.csproj" />
   </ItemGroup>
 

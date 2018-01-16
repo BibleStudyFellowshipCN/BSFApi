@@ -1,6 +1,7 @@
 namespace Website.Controllers
 {
     using Church.BibleStudyFellowship.Models;
+    using System.Collections.Generic;
     using Microsoft.AspNetCore.Mvc;
 
     [Route("material/{culture}/[controller]")]
@@ -11,6 +12,12 @@ namespace Website.Controllers
         public LessonsController(IRepository repository)
         {
             this.repository = repository;
+        }
+
+        [HttpGet("")]
+        public IEnumerable<Lesson> By(string culture)
+        {
+            return this.repository.GetLessons(culture);
         }
 
         [HttpGet("{id}")]
