@@ -26,7 +26,7 @@ namespace Website.Controllers
         [HttpGet("{passage}")]
         public Task<IEnumerable<BibleChapter>> ByAsync(string culture, string passage)
         {
-            var bibleClient = new BibleClient();
+            var bibleClient = BibleClient.Create(culture, this.repository);
             return bibleClient.GetVersesAsync(passage);
         }
     }

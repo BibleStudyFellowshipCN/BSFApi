@@ -8,7 +8,7 @@
 
         public string Type { get; set; }
 
-        public string direction { get; set; }
+        public string Direction { get; set; }
 
         public IList<PassageBook> Book { get; set; }
     }

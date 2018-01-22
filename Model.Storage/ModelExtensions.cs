@@ -29,15 +29,15 @@
                 PartitionKey = lesson.Culture,
                 RowKey = lesson.Id,
             };
-            entry["Name"] = EntityProperty.CreateEntityPropertyFromObject(lesson.Name);
-            entry["AudioUrl"] = EntityProperty.CreateEntityPropertyFromObject(lesson.Audio);
-            entry["MemoryVerse"] = EntityProperty.CreateEntityPropertyFromObject(lesson.MemoryVerse);
-            entry["One"] = EntityProperty.CreateEntityPropertyFromObject(JsonConvert.SerializeObject(lesson.DayQuestions[0]));
-            entry["Two"] = EntityProperty.CreateEntityPropertyFromObject(JsonConvert.SerializeObject(lesson.DayQuestions[1]));
-            entry["Three"] = EntityProperty.CreateEntityPropertyFromObject(JsonConvert.SerializeObject(lesson.DayQuestions[2]));
-            entry["Four"] = EntityProperty.CreateEntityPropertyFromObject(JsonConvert.SerializeObject(lesson.DayQuestions[3]));
-            entry["Five"] = EntityProperty.CreateEntityPropertyFromObject(JsonConvert.SerializeObject(lesson.DayQuestions[4]));
-            entry["Six"] = EntityProperty.CreateEntityPropertyFromObject(JsonConvert.SerializeObject(lesson.DayQuestions[5]));
+            entry.Properties["Name"] = EntityProperty.CreateEntityPropertyFromObject(lesson.Name);
+            entry.Properties["AudioUrl"] = EntityProperty.CreateEntityPropertyFromObject(lesson.Audio);
+            entry.Properties["MemoryVerse"] = EntityProperty.CreateEntityPropertyFromObject(lesson.MemoryVerse);
+            entry.Properties["One"] = EntityProperty.CreateEntityPropertyFromObject(JsonConvert.SerializeObject(lesson.DayQuestions[0]));
+            entry.Properties["Two"] = EntityProperty.CreateEntityPropertyFromObject(JsonConvert.SerializeObject(lesson.DayQuestions[1]));
+            entry.Properties["Three"] = EntityProperty.CreateEntityPropertyFromObject(JsonConvert.SerializeObject(lesson.DayQuestions[2]));
+            entry.Properties["Four"] = EntityProperty.CreateEntityPropertyFromObject(JsonConvert.SerializeObject(lesson.DayQuestions[3]));
+            entry.Properties["Five"] = EntityProperty.CreateEntityPropertyFromObject(JsonConvert.SerializeObject(lesson.DayQuestions[4]));
+            entry.Properties["Six"] = EntityProperty.CreateEntityPropertyFromObject(JsonConvert.SerializeObject(lesson.DayQuestions[5]));
 
             return entry;
         }
@@ -73,28 +73,28 @@
             {
                 Culture = entry.PartitionKey,
                 Title = entry.RowKey,
-                Lessons = JsonConvert.DeserializeObject<IList<LessonItem>>(entry["Lessons"].StringValue),
+                Lessons = JsonConvert.DeserializeObject<IList<LessonItem>>(entry.Properties["Lessons"].StringValue),
             };
         }
 
         public static Lesson ToLesson(this DynamicTableEntity entry)
         {
             var days = new[] {
-                JsonConvert.DeserializeObject<Day>(entry["One"].StringValue),
-                JsonConvert.DeserializeObject<Day>(entry["Two"].StringValue),
-                JsonConvert.DeserializeObject<Day>(entry["Three"].StringValue),
-                JsonConvert.DeserializeObject<Day>(entry["Four"].StringValue),
-                JsonConvert.DeserializeObject<Day>(entry["Five"].StringValue),
-                JsonConvert.DeserializeObject<Day>(entry["Six"].StringValue),
+                JsonConvert.DeserializeObject<Day>(entry.Properties["One"].StringValue),
+                JsonConvert.DeserializeObject<Day>(entry.Properties["Two"].StringValue),
+                JsonConvert.DeserializeObject<Day>(entry.Properties["Three"].StringValue),
+                JsonConvert.DeserializeObject<Day>(entry.Properties["Four"].StringValue),
+                JsonConvert.DeserializeObject<Day>(entry.Properties["Five"].StringValue),
+                JsonConvert.DeserializeObject<Day>(entry.Properties["Six"].StringValue),
             };
 
             return new Lesson
             {
                 Culture = entry.PartitionKey,
                 Id = entry.RowKey,
-                Name = entry["Name"].StringValue,
+                Name = entry.Properties["Name"].StringValue,
                 ////AudioUrl = entry["AudioUrl"].StringValue,
-                MemoryVerse = entry["MemoryVerse"].StringValue,
+                MemoryVerse = entry.Properties["MemoryVerse"].StringValue,
                 DayQuestions = days.ToList(),
             };
         }
@@ -104,7 +104,7 @@
             return new Feedback
             {
                 TimeStamp = entry.Timestamp.UtcDateTime,
-                Comment = entry["Comment"].StringValue,
+                Comment = entry.Properties["Comment"].StringValue,
             };
         }
 
@@ -114,8 +114,8 @@
             {
                 Culture = entry.PartitionKey,
                 Order = int.Parse(entry.RowKey),
-                Name = entry["Name"].StringValue,
-                Shorthand = entry["Shorthand"].StringValue,
+                Name = entry.Properties["Name"].StringValue,
+                Shorthand = entry.Properties["Shorthand"].StringValue,
             };
         }
     }

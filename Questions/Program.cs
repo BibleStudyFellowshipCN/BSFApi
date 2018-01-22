@@ -1,14 +1,13 @@
 ﻿namespace Questions
 {
     using System;
-    using System.Configuration;
     using System.Globalization;
     using System.IO;
     using System.Linq;
 
     using Church.BibleStudyFellowship.Models;
-    using Church.BibleStudyFellowship.Models.PdfBox;
     using Church.BibleStudyFellowship.Models.Storage;
+    using Microsoft.Extensions.Configuration;
     using Newtonsoft.Json;
 
     class Program
@@ -21,7 +20,8 @@
                 return;
             }
 
-            var appSettings = ConfigurationManager.AppSettings;
+            var builder = new ConfigurationBuilder().AddJsonFile("appsettings.json");
+            var configuration = builder.Build();
 
             var culture = CultureInfo.CreateSpecificCulture(args[0]);
             var input = args[1];
@@ -29,9 +29,8 @@
             var date = DateTime.Parse(args[3]);
             var title = args[4];
 
-            var text = ".pdf".Equals(Path.GetExtension(input), StringComparison.OrdinalIgnoreCase) ?
-                Utilities.ReadFromPdf(input) : File.ReadAllText(input);
-            var repository = Repository.Create(appSettings["ConnectionString"]);
+            var text = File.ReadAllText(input);
+            var repository = Repository.Create(configuration["AzureStorage:ConnectionString"]);
             var parser = Program.GetParser(culture, year, repository);
             var lesson = parser.Parse(text);
             repository.UpsertLessonAsync(lesson).Wait();
@@ -67,7 +66,7 @@
 
         private static AbstractTextParser GetParser(CultureInfo cultureInfo, int year, IRepository repository)
         {
-            switch(cultureInfo.Name)
+            switch (cultureInfo.Name)
             {
                 case "en-US":
                     return TextParseEnUs.Create(year, repository);

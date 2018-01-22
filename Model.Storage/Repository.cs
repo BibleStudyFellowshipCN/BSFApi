@@ -1,7 +1,9 @@
 ﻿namespace Church.BibleStudyFellowship.Models.Storage
 {
+    using System;
     using System.Collections.Generic;
     using System.Linq;
+    using System.Threading;
     using System.Threading.Tasks;
 
     using Church.BibleStudyFellowship.Models;
@@ -57,7 +59,7 @@
         {
             var filter = TableQuery.GenerateFilterCondition("PartitionKey", QueryComparisons.Equal, culture);
             var query = new TableQuery().Where(filter);
-            return this.studyTable.ExecuteQuery(query).Select(item => item.ToStudy());
+            return Repository.ExecuteQueryAsync(this.studyTable, query, ModelExtensions.ToStudy).Result;
         }
 
         public Study GetStudy(string culture, string title)
@@ -78,13 +80,13 @@
         {
             var filter = TableQuery.GenerateFilterCondition("PartitionKey", QueryComparisons.Equal, culture);
             var query = new TableQuery().Where(filter);
-            return this.lessonTable.ExecuteQuery(query).Select(item => item.ToLesson());
+            return Repository.ExecuteQueryAsync(this.lessonTable, query, ModelExtensions.ToLesson).Result;
         }
 
         public Lesson GetLesson(string culture, string id)
         {
             var retrieveOperation = TableOperation.Retrieve<DynamicTableEntity>(culture, id);
-            var tableResult = this.lessonTable.Execute(retrieveOperation);
+            var tableResult = this.lessonTable.ExecuteAsync(retrieveOperation).Result;
             ExceptionUtilities.ThowInvalidOperationExceptionIfFalse(tableResult.Result != null, $"Could not find the lesson on ({culture},{id})");
             return ((DynamicTableEntity)tableResult.Result).ToLesson();
         }
@@ -97,14 +99,14 @@
 
         public IEnumerable<Feedback> GetFeedback()
         {
-            var query = new TableQuery<DynamicTableEntity>();
-            return this.feedbackTable.ExecuteQuery(query).Select(item => item.ToFeedback());
+            var query = new TableQuery();
+            return Repository.ExecuteQueryAsync(this.feedbackTable, query, ModelExtensions.ToFeedback).Result;
         }
 
         public Task AddBibleBooksAsync(IEnumerable<BibleBook> books)
         {
             var batchOperations = new TableBatchOperation();
-            foreach(var book in books)
+            foreach (var book in books)
             {
                 batchOperations.Insert(book.ToStorage());
             }
@@ -116,18 +118,35 @@
         {
             var filter = TableQuery.GenerateFilterCondition("PartitionKey", QueryComparisons.Equal, culture);
             var query = new TableQuery().Where(filter);
-            return this.bibleBookTable.ExecuteQuery(query).Select(item => item.ToBibleBook());
+            return Repository.ExecuteQueryAsync(this.bibleBookTable, query, ModelExtensions.ToBibleBook).Result;
+
         }
 
         private static CloudTable CreateTableIfNotExist(CloudTableClient client, string name)
         {
             var table = client.GetTableReference(name);
-            if (!table.Exists())
-            {
-                table.CreateIfNotExists();
-            }
+            table.CreateIfNotExistsAsync().Wait();
 
             return table;
+        }
+
+        private static async Task<IEnumerable<T>> ExecuteQueryAsync<T>(CloudTable cloudTable, TableQuery query, Func<DynamicTableEntity, T> convert)
+        {
+            var token = new TableContinuationToken();
+            var opt = new TableRequestOptions();
+            var ctx = new OperationContext() { ClientRequestID = "ID" };
+            var cancelToken = new CancellationToken();
+            var items = new List<T>();
+            while (!cancelToken.IsCancellationRequested && token != null)
+            {
+                var segment = await cloudTable.ExecuteQuerySegmentedAsync(query, token, opt, ctx, cancelToken);
+
+                // Run the method
+                items.AddRange(segment.Select(result => convert(result)));
+                token = segment.ContinuationToken;
+            }
+
+            return items.AsReadOnly();
         }
     }
 }
