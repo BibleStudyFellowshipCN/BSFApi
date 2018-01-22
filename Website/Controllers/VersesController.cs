@@ -17,9 +17,9 @@ namespace Website.Controllers
         }
 
         [HttpGet("Pattern")]
-        public string GetPattern(string culture)
+        public async Task<string> GetPattern(string culture)
         {
-            var verseLocator = VerseLocator.Create(repository.GetBibleBooks(culture));
+            var verseLocator = VerseLocator.Create(await repository.GetBibleBooksAsync(culture));
             return verseLocator.GetPattern();
         }
 

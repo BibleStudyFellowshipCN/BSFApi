@@ -55,17 +55,17 @@
             return this.studyTable.ExecuteAsync(insertOperation);
         }
 
-        public IEnumerable<Study> GetStudies(string culture)
+        public Task<IEnumerable<Study>> GetStudiesAsync(string culture)
         {
             var filter = TableQuery.GenerateFilterCondition("PartitionKey", QueryComparisons.Equal, culture);
             var query = new TableQuery().Where(filter);
-            return Repository.ExecuteQueryAsync(this.studyTable, query, ModelExtensions.ToStudy).Result;
+            return Repository.ExecuteQueryAsync(this.studyTable, query, ModelExtensions.ToStudy);
         }
 
-        public Study GetStudy(string culture, string title)
+        public async Task<Study> GetStudyAsync(string culture, string title)
         {
             var retrieveOperation = TableOperation.Retrieve<DynamicTableEntity>(culture, title);
-            var tableResult = this.studyTable.ExecuteAsync(retrieveOperation).Result;
+            var tableResult = await this.studyTable.ExecuteAsync(retrieveOperation);
             ExceptionUtilities.ThowInvalidOperationExceptionIfFalse(tableResult.Result != null, $"Could not find the study on ({culture},{title})");
             return ((DynamicTableEntity)tableResult.Result).ToStudy();
         }
@@ -76,17 +76,17 @@
             return this.lessonTable.ExecuteAsync(insertOperation);
         }
 
-        public IEnumerable<Lesson> GetLessons(string culture)
+        public Task<IEnumerable<Lesson>> GetLessonsAsync(string culture)
         {
             var filter = TableQuery.GenerateFilterCondition("PartitionKey", QueryComparisons.Equal, culture);
             var query = new TableQuery().Where(filter);
-            return Repository.ExecuteQueryAsync(this.lessonTable, query, ModelExtensions.ToLesson).Result;
+            return Repository.ExecuteQueryAsync(this.lessonTable, query, ModelExtensions.ToLesson);
         }
 
-        public Lesson GetLesson(string culture, string id)
+        public async Task<Lesson> GetLessonAsync(string culture, string id)
         {
             var retrieveOperation = TableOperation.Retrieve<DynamicTableEntity>(culture, id);
-            var tableResult = this.lessonTable.ExecuteAsync(retrieveOperation).Result;
+            var tableResult = await this.lessonTable.ExecuteAsync(retrieveOperation);
             ExceptionUtilities.ThowInvalidOperationExceptionIfFalse(tableResult.Result != null, $"Could not find the lesson on ({culture},{id})");
             return ((DynamicTableEntity)tableResult.Result).ToLesson();
         }
@@ -114,11 +114,11 @@
             return this.bibleBookTable.ExecuteBatchAsync(batchOperations);
         }
 
-        public IEnumerable<BibleBook> GetBibleBooks(string culture)
+        public Task<IEnumerable<BibleBook>> GetBibleBooksAsync(string culture)
         {
             var filter = TableQuery.GenerateFilterCondition("PartitionKey", QueryComparisons.Equal, culture);
             var query = new TableQuery().Where(filter);
-            return Repository.ExecuteQueryAsync(this.bibleBookTable, query, ModelExtensions.ToBibleBook).Result;
+            return Repository.ExecuteQueryAsync(this.bibleBookTable, query, ModelExtensions.ToBibleBook);
 
         }
 

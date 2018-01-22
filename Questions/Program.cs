@@ -42,7 +42,7 @@
                 Name = lesson.Name,
                 ProposedDate = date.ToString(parser.Culture.DateTimeFormat.LongDatePattern)
             };
-            var currentStudy = repository.GetStudies(culture.Name).FirstOrDefault(study => study.Title == title);
+            var currentStudy = repository.GetStudiesAsync(culture.Name).Result.FirstOrDefault(study => study.Title == title);
             if (currentStudy == null)
             {
                 currentStudy = new Study { Culture = parser.Culture.Name, Title = title, Lessons = new[] { item }.ToList() };

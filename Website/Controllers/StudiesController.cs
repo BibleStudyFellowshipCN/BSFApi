@@ -2,6 +2,8 @@ namespace Website.Controllers
 {
     using Church.BibleStudyFellowship.Models;
     using Microsoft.AspNetCore.Mvc;
+    using System.Collections.Generic;
+    using System.Threading.Tasks;
 
     [Route("material/{culture}/[controller]")]
     public class StudiesController : Controller
@@ -13,10 +15,16 @@ namespace Website.Controllers
             this.repository = repository;
         }
 
-        [HttpGet("{title}")]
-        public Study By(string culture, string title)
+        [HttpGet("")]
+        public Task<IEnumerable<Study>> Get(string culture)
         {
-            return this.repository.GetStudy(culture, title);
+            return this.repository.GetStudiesAsync(culture);
+        }
+
+        [HttpGet("{title}")]
+        public Task<Study> GetBy(string culture, string title)
+        {
+            return this.repository.GetStudyAsync(culture, title);
         }
     }
 }

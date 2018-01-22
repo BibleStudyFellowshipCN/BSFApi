@@ -7,15 +7,15 @@
     {
         Task UpsertStudyAsync(Study study);
 
-        IEnumerable<Study> GetStudies(string culture);
+        Task<IEnumerable<Study>> GetStudiesAsync(string culture);
 
-        Study GetStudy(string culture, string title);
+        Task<Study> GetStudyAsync(string culture, string title);
 
         Task UpsertLessonAsync(Lesson lesson);
 
-        IEnumerable<Lesson> GetLessons(string culture);
+        Task<IEnumerable<Lesson>> GetLessonsAsync(string culture);
 
-        Lesson GetLesson(string culture, string id);
+        Task<Lesson> GetLessonAsync(string culture, string id);
 
         Task AddFeedbackAsync(Feedback feedback);
 
@@ -23,6 +23,6 @@
 
         Task AddBibleBooksAsync(IEnumerable<BibleBook> books);
 
-        IEnumerable<BibleBook> GetBibleBooks(string culture);
+        Task<IEnumerable<BibleBook>> GetBibleBooksAsync(string culture);
     }
 }

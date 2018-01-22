@@ -23,9 +23,9 @@
 
         public static BibleClient Create(string culture, IRepository repository)
         {
-            var books = repository.GetBibleBooks(culture);
+            var books = repository.GetBibleBooksAsync(culture).Result;
             var bookDictionary = books.ToDictionary(book => book.Order, book => book.Name);
-            var bookMappings = repository.GetBibleBooks("en-US").OrderBy(book=>book.Order)
+            var bookMappings = repository.GetBibleBooksAsync("en-US").Result.OrderBy(book=>book.Order)
                 .ToDictionary(book => bookDictionary[book.Order], book => book.Name);
             var verseLocator = VerseLocator.Create(books);
             return new BibleClient(verseLocator, bookMappings);
