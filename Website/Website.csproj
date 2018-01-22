@@ -5,9 +5,12 @@
     <TypeScriptCompileBlocked>true</TypeScriptCompileBlocked>
     <TypeScriptToolsVersion>Latest</TypeScriptToolsVersion>
     <IsPackable>false</IsPackable>
+    <ApplicationInsightsResourceId>/subscriptions/a94ca5c9-6b42-4474-afcb-6588e6093484/resourcegroups/Default-ApplicationInsights-EastUS/providers/microsoft.insights/components/Website</ApplicationInsightsResourceId>
+    <ApplicationInsightsAnnotationResourceId>/subscriptions/a94ca5c9-6b42-4474-afcb-6588e6093484/resourcegroups/Default-ApplicationInsights-EastUS/providers/microsoft.insights/components/Website</ApplicationInsightsAnnotationResourceId>
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.1.1" />
     <PackageReference Include="Microsoft.AspNetCore.All" Version="2.0.3" />
     <PackageReference Include="Newtonsoft.Json" Version="10.0.3" />
     <PackageReference Include="WindowsAzure.Storage" Version="8.7.0" />
@@ -30,6 +33,10 @@
     <ProjectReference Include="..\Model.Storage\Model.Storage.csproj" />
     <ProjectReference Include="..\Models.GetBible\Models.GetBible.csproj" />
     <ProjectReference Include="..\Models\Models.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <WCFMetadata Include="Connected Services" />
   </ItemGroup>
 
   <Target Name="DebugRunWebpack" BeforeTargets="Build" Condition=" '$(Configuration)' == 'Debug' And !Exists('wwwroot\dist') ">
