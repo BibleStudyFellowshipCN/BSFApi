@@ -42,15 +42,17 @@ export class LessonTab extends React.Component<RouteComponentProps<{}>, FetchLes
             : this.renderQuestionPage(this.state.lesson);
 
         return <div>
-            <h1>{this.state.lesson.name}</h1>
             {contents}
         </div>;
     }
 
     private renderQuestionPage(lesson: Lesson) {
-        return <div className="question">
-            <div>背诵经文：<b>{lesson.memoryVerse}</b></div>
-            <div>{this.renderDayQuestions(lesson.dayQuestions)}</div>
+        return <div>
+            <h1>{this.state.lesson.name}</h1>
+            <div className="question">
+                <div>背诵经文：<b>{lesson.memoryVerse}</b></div>
+                <div>{this.renderDayQuestions(lesson.dayQuestions)}</div>
+            </div>
         </div>;
     }
 
