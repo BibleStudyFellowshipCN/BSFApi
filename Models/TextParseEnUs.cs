@@ -11,7 +11,7 @@
     {
         private static Regex DayPattern = new Regex("^([A-Z]+) DAY:", RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
-        private static Regex QuestionPattern = new Regex(@"^ *(\d+)(\. *a)?\. ", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+        private static Regex QuestionPattern = new Regex(@"^ *(\d+) *(\. *a)?\. ", RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
         private static Regex SubQuestionPattern = new Regex(@"^ *([b-e])\. ", RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
@@ -94,7 +94,7 @@
             lesson.DayQuestions.Add(day);
         }
 
-        [Section(@"^ *\d+\. ")]
+        [Section(@"^ *\d+ *\. ")]
         protected void ParseQuestion(Lesson lesson, IList<string> lines)
         {
             const string Separator = "_";
