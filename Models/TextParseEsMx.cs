@@ -45,7 +45,7 @@
             return new TextParseEsMx(year, culture, methodMappings, verseLocator);
         }
 
-        [Section(@"^Lección \d+: ")]
+        [Section(@": Lección \d+ \|")]
         protected void ParseFotter1(Lesson lesson, IList<string> lines)
         {
             const string Prefix = "BSF® ";

@@ -45,16 +45,14 @@
             return new TextParseEnUs(year, culture, methodMappings, verseLocator);
         }
 
-        [Section(@"Lesson \d+ \| www\.bsfinternational\.org")]
+        [Section(@"Lesson \d+ \| (www\.bsfinternational\.org)|(www\.mybsf\.org)")]
         protected void ParseFotter1(Lesson lesson, IList<string> lines)
         {
-            const string Prefix = "BSF® ";
-
-            ExceptionUtilities.ThowInvalidOperationExceptionIfFalse(lines.Count > 3, "At least 4 lines.");
-            var name = lines[1].Substring(Prefix.Length).Trim();
-            var order = AbstractTextParser.ExtractOrder(name);
+            ExceptionUtilities.ThowInvalidOperationExceptionIfFalse(lines.Count > 0, "At least 1 line.");
+            var segments = lines[0].Split('|');
+            var order = AbstractTextParser.ExtractOrder(lines[0]);
             lesson.Id = this.Year + "_" + order.ToString("D2");
-            lesson.Name = lines[3] + " "+ name;
+            lesson.Name = segments[0].Trim();
         }
 
         [Section("^®$")]
@@ -102,7 +100,7 @@
             var match = TextParseEnUs.QuestionPattern.Match(lines[0]);
             var questionOrder = match.Groups[1].Value;
             lines[0] = lines[0].Substring(match.Value.Length);
-            var questions = TextParseEnUs.GetSubquestions(lines);
+            var questions = TextParseEnUs.GetSubquestions(lines.Where(line => !string.IsNullOrWhiteSpace(line)).ToList());
             var count = 1;
             foreach (var line in questions)
             {
@@ -118,7 +116,7 @@
 
             var match = TextParseEnUs.SubQuestionPattern.Match(lines[0]);
             lines[0] = lines[0].Substring(match.Value.Length);
-            var questions = TextParseEnUs.GetSubquestions(lines);
+            var questions = TextParseEnUs.GetSubquestions(lines.Where(line => !string.IsNullOrWhiteSpace(line)).ToList());
             var parts = lesson.DayQuestions.Last().Questions.Last().Id.Split(new[] { Separator }, StringSplitOptions.None).ToList();
             var count = int.Parse(parts.Last());
             foreach (var line in questions)
