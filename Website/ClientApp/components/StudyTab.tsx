@@ -15,7 +15,7 @@ export class StudyTab extends React.Component<RouteComponentProps<{}>, FetchStud
     }
 
     componentDidMount() {
-        fetch('material/zh-CN/Studies/罗马书 2017-2018')
+        fetch('material/zh-CN/Studies/应许之地的子民(一) 2018-2019')
             .then(response => response.json() as Promise<Study>)
             .then(data => {
                 this.setState({ studies: data, loading: false });
