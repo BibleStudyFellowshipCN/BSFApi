@@ -25,9 +25,11 @@
 
         private readonly string versePattern;
 
+        private readonly string chapterConnectors;
+
         private readonly Regex verseRegex;
 
-        internal VerseLocator(string books, string chapterSeparators, string verseConnectors, string verseSeparators, string groupSeparators, string chapterPattern)
+        internal VerseLocator(string books, string chapterSeparators, string verseConnectors, string verseSeparators, string groupSeparators, string chapterPattern, string chapterConnectors = "-")
         {
             this.books = books;
             this.chapterSeparators = chapterSeparators;
@@ -35,6 +37,7 @@
             this.verseSeparators = verseSeparators;
             this.groupSeparators = groupSeparators;
             this.chapterPattern = chapterPattern;
+            this.chapterConnectors = chapterConnectors;
             this.chapterRegex = new Regex(chapterPattern, RegexOptions.Compiled | RegexOptions.IgnoreCase);
             this.versePattern = string.Format(
                 VerseLocator.VerseFormat,
@@ -50,7 +53,7 @@
             ExceptionUtilities.ThrowArgumentNullExceptionIfNull(books, nameof(books));
 
             var bibleBooks = books.ToArray();
-            ExceptionUtilities.ThowInvalidOperationExceptionIfFalse(bibleBooks.Length > 0, "Need at least one books.");
+            ExceptionUtilities.ThrowInvalidOperationExceptionIfFalse(bibleBooks.Length > 0, "Need at least one books.");
 
             var bookString = includeShorthand ? string.Join("|", bibleBooks.SelectMany(book => new[] { book.Name, book.Shorthand }))
                 : string.Join("|", bibleBooks.Select(book => book.Name));
@@ -79,7 +82,7 @@
             ExceptionUtilities.ThrowArgumentNullExceptionIfNull(match, nameof(match));
 
             var book = match.Groups[1].Value.Trim();
-            var verses = match.Groups[2].Value.Trim();
+            var verses = match.Groups[2].Value;
             if (!this.verseRegex.IsMatch(verses))
             {
                 return this.TryGetChapters(book, verses);
@@ -119,20 +122,60 @@
             return items;
         }
 
+        protected virtual int MapChapter(string value)
+        {
+            return int.Parse(value);
+        }
+
         private IList<VerseItem> TryGetChapters(string book, string text)
         {
             var items = new List<VerseItem>();
-            var parts = this.chapterRegex.Split(text);
-            int loop = 1;
-            while (loop < parts.Length)
+            var groups = this.chapterRegex.Match(text).Groups;
+            ExceptionUtilities.ThrowInvalidOperationExceptionIfFalse(groups.Count >= 4, "At least 4 groups.");
+            ExceptionUtilities.ThrowInvalidOperationExceptionIfFalse(groups[1].Captures.Count == 1, "Must 1 capture.");
+            var last = groups[1].Captures[0].Value;
+            var loop = 0;
+            while (loop < groups[2].Captures.Count)
+            {
+                var capture2 = groups[2].Captures[loop].Value;
+                var capture3 = groups[3].Captures[loop].Value;
+                var difference = capture2.Substring(0, capture2.Length - capture3.Length).Trim();
+                if (this.chapterConnectors.Contains(difference))
+                {
+                    var item = new VerseItem
+                    {
+                        Book = book,
+                        Verse = this.MapChapter(last) + ":1-" + this.MapChapter(capture3) + ":999",
+                    };
+                    items.Add(item);
+                    loop++;
+                    if (loop < groups[2].Captures.Count)
+                    {
+                        last = groups[3].Captures[loop].Value;
+                    }
+                    loop++;
+                }
+                else
+                {
+                    var item = new VerseItem
+                    {
+                        Book = book,
+                        Verse = this.MapChapter(last) + ":1-999",
+                    };
+                    items.Add(item);
+                    last = capture3;
+                    loop++;
+                }
+            }
+
+            if (loop == groups[2].Captures.Count)
             {
                 var item = new VerseItem
                 {
                     Book = book,
-                    Verse = parts[loop] + ":1-999",
+                    Verse = this.MapChapter(last) + ":1-999",
                 };
                 items.Add(item);
-                loop += 2;
             }
 
             return items;

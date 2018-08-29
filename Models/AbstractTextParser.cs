@@ -79,7 +79,7 @@
             var regex = new Regex(Pattern);
             var match = regex.Match(line);
             if(!match.Success)
-            {
+            { 
                 throw new FormatException($"Could not find lesson number from {line}.");
             }
 
@@ -101,14 +101,17 @@
 
         protected IList<VerseItem> ExtractVerse(string text)
         {
-            var items = new List<VerseItem>();
+            var items = new HashSet<VerseItem>();
             var collection = this.verseRegex.Matches(text);
             foreach (Match match in collection)
             {
-                items.AddRange(this.verseLocator.GetVerses(match));
+                foreach(var verse in this.verseLocator.GetVerses(match))
+                {
+                    items.Add(verse);
+                }
             }
 
-            return items;
+            return items.ToList();
         }
     }
 }

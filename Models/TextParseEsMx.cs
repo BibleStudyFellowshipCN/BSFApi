@@ -50,7 +50,7 @@
         {
             const string Prefix = "BSF® ";
 
-            ExceptionUtilities.ThowInvalidOperationExceptionIfFalse(lines.Count > 3, "At least 4 lines.");
+            ExceptionUtilities.ThrowInvalidOperationExceptionIfFalse(lines.Count > 3, "At least 4 lines.");
             var name = lines[1].Substring(Prefix.Length).Trim();
             var order = AbstractTextParser.ExtractOrder(name);
             lesson.Id = this.Year + "_" + order.ToString("D2");
@@ -70,7 +70,7 @@
         [Section("^Versículo de las Escrituras para memorizar")]
         protected void ParseMemoryVerse(Lesson lesson, IList<string> lines)
         {
-            ExceptionUtilities.ThowInvalidOperationExceptionIfFalse(lines.Count() > 1, "At least two lines.");
+            ExceptionUtilities.ThrowInvalidOperationExceptionIfFalse(lines.Count() > 1, "At least two lines.");
             lesson.MemoryVerse = string.Join(string.Empty, lines.Skip(1));
         }
 

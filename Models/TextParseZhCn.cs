@@ -50,11 +50,11 @@
         {
             const string Prefix = "BSF®";
 
-            ExceptionUtilities.ThowInvalidOperationExceptionIfFalse(lines.Count > 3, "At least 4 lines.");
-            var name = lines[2].Substring(Prefix.Length).Trim();
+            ExceptionUtilities.ThrowInvalidOperationExceptionIfFalse(lines.Count > 1, "At least 2 lines.");
+            var name = lines[0].Substring(Prefix.Length).Trim();
             var order = AbstractTextParser.ExtractOrder(name);
             lesson.Id = this.Year + "_" + order.ToString("D2");
-            lesson.Name = lines[6].Split(' ')[1] + " " + name;
+            lesson.Name = lines[1].Split(' ')[1] + " " + name;
         }
 
         [Section("^®$")]
@@ -67,11 +67,11 @@
         {
         }
 
-        [Section(@"\| Adult Questions \| Lesson")]
+        [Section(@"背诵经文")]
         protected void ParseMemoryVerse(Lesson lesson, IList<string> lines)
         {
-            ExceptionUtilities.ThowInvalidOperationExceptionIfFalse(lines.Count() > 1, "At least two lines.");
-            lesson.MemoryVerse = string.Join(string.Empty, lines.Skip(1));
+            ExceptionUtilities.ThrowInvalidOperationExceptionIfFalse(lines.Count() > 1, "At least two lines.");
+            lesson.MemoryVerse = string.Join(string.Empty, lines.Skip(2));
         }
 
         [Section("^第.天：")]

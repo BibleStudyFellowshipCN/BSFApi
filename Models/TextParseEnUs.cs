@@ -45,18 +45,17 @@
             return new TextParseEnUs(year, culture, methodMappings, verseLocator);
         }
 
-        [Section(@"Lesson \d+ \| (www\.bsfinternational\.org)|(www\.mybsf\.org)")]
-        protected void ParseFotter1(Lesson lesson, IList<string> lines)
+        [Section(@"^Lesson \d+")]
+        protected void ParseTitle(Lesson lesson, IList<string> lines)
         {
-            ExceptionUtilities.ThowInvalidOperationExceptionIfFalse(lines.Count > 0, "At least 1 line.");
-            var segments = lines[0].Split('|');
+            ExceptionUtilities.ThrowInvalidOperationExceptionIfFalse(lines.Count >= 3, "At least 3 line.");
             var order = AbstractTextParser.ExtractOrder(lines[0]);
             lesson.Id = this.Year + "_" + order.ToString("D2");
-            lesson.Name = segments[0].Trim();
+            lesson.Name = lines[2].Trim() + " " + lines[0].Trim();
         }
 
-        [Section("^®$")]
-        protected void ParseEmpty(Lesson lesson, IList<string> lines)
+        [Section(@"Lesson \d+ \| (www\.bsfinternational\.org)|(www\.mybsf\.org)")]
+        protected void ParseFotter1(Lesson lesson, IList<string> lines)
         {
         }
 
@@ -68,7 +67,7 @@
         [Section("^Scripture Memory Verse")]
         protected void ParseMemoryVerse(Lesson lesson, IList<string> lines)
         {
-            ExceptionUtilities.ThowInvalidOperationExceptionIfFalse(lines.Count() > 1, "At least two lines.");
+            ExceptionUtilities.ThrowInvalidOperationExceptionIfFalse(lines.Count() >= 2, "At least two lines.");
             lesson.MemoryVerse = string.Join(string.Empty, lines.Skip(1));
         }
 
